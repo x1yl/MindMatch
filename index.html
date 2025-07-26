@@ -4,9 +4,83 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MindMatch</title>
+    <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="./output.css" />
   </head>
-  <body>
-    <h1 class="text-3xl font-bold underline">MindMatch</h1>
+  <body class="bg-light-1 text-dark-1">
+    <!-- Landing Section -->
+    <section
+      class="min-h-screen flex flex-col items-center justify-center relative pattern-bg"
+    >
+      <div class="text-center -mt-4 md:-mt-6 lg:-mt-8">
+        <h1
+          id="title"
+          class="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold"
+        >
+          MindMatch
+        </h1>
+        <p class="text-lg md:text-xl lg:text-2xl xl:text-3xl mt-4 md:mt-6">
+          your pocket therapy companion
+        </p>
+      </div>
+
+      <div class="mt-12 md:mt-60 text-center">
+        <button
+          class="w-[200px] md:w-[250px] bg-gradient-to-r from-primary to-primary-dark h-[60px] md:h-[70px] my-3 flex items-center justify-center rounded-xl cursor-pointer relative overflow-hidden transition-all duration-500 ease-in-out shadow-md hover:scale-105 hover:shadow-lg text-light-1 text-lg md:text-xl font-semibold"
+        >
+          Get Started
+        </button>
+        <a
+          href="#"
+          class="block mt-4 text-dark-2 hover:text-primary transition-colors"
+          >Already have an account?</a
+        >
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="min-h-screen bg-light-2 py-20">
+      <div class="container mx-auto px-6">
+        <h2 class="text-4xl md:text-5xl font-bold text-center mb-16">
+          Features
+        </h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-light-1 p-8 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-4">AI Therapy Sessions</h3>
+            <p class="text-dark-2">
+              Personalized therapy sessions powered by AI
+            </p>
+          </div>
+          <div class="bg-light-1 p-8 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-4">Progress Tracking</h3>
+            <p class="text-dark-2">
+              Monitor your mental health journey with detailed insights
+            </p>
+          </div>
+          <div class="bg-light-1 p-8 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-4">Journaling</h3>
+            <p class="text-dark-2">Simple, distraction-free journaling.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="min-h-screen bg-light-3 py-20">
+      <div class="container mx-auto px-6 text-center">
+        <h2 class="text-4xl md:text-5xl font-bold mb-16">About MindMatch</h2>
+        <div class="max-w-4xl mx-auto">
+          <p class="text-lg md:text-xl text-dark-2 mb-8">
+            MindMatch is revolutionizing mental health care by making therapy
+            accessible, affordable, and available to everyone through the power
+            of AI.
+          </p>
+          <p class="text-lg md:text-xl text-dark-2">
+            Our mission is to break down barriers and provide quality mental
+            health support that fits into your lifestyle.
+          </p>
+        </div>
+      </div>
+    </section>
   </body>
 </html>
