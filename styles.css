@@ -35,3 +35,9 @@ body {
     );
   background-size: 55px 55px;
 }
+
+/* Dark mode pattern background */
+.dark .pattern-bg {
+  --color: #404040;
+  background-color: #2d2d2d;
+}
