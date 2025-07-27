@@ -7,27 +7,11 @@ function updateTheme() {
 
   document.documentElement.classList.toggle("dark", isDark);
 
-  if (isDark) {
-    document.documentElement.style.setProperty("--color-light-1", "#1a1a1a");
-    document.documentElement.style.setProperty("--color-light-2", "#2d2d2d");
-    document.documentElement.style.setProperty("--color-light-3", "#404040");
-    document.documentElement.style.setProperty("--color-dark-1", "#e0e0e0");
-    document.documentElement.style.setProperty("--color-dark-2", "#b0b0b0");
-    document.documentElement.style.setProperty("--color-dark-3", "#808080");
-  } else {
-    document.documentElement.style.setProperty("--color-light-1", "#ffffff");
-    document.documentElement.style.setProperty("--color-light-2", "#f4faf7");
-    document.documentElement.style.setProperty("--color-light-3", "#deede6");
-    document.documentElement.style.setProperty("--color-dark-1", "#173626");
-    document.documentElement.style.setProperty("--color-dark-2", "#2d5340");
-    document.documentElement.style.setProperty("--color-dark-3", "#476b59");
-  }
-
   const themeIcon = document.querySelector(".theme-button i");
   if (themeIcon) {
     themeIcon.className = isDark
-      ? "fas fa-moon text-dark-1"
-      : "fas fa-sun text-dark-1";
+      ? "fas fa-moon text-dark-1 dark:text-dark-1-dark"
+      : "fas fa-sun text-dark-1 dark:text-dark-1-dark";
   }
 }
 
