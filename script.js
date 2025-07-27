@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
   loginBtn?.addEventListener('click', async function() {
     const isAuthenticated = auth0Client && await auth0Client.isAuthenticated();
     if (!isAuthenticated) {
-      await login();
+      await signUp();
     }
   });
 
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
   loginLink?.addEventListener('click', function(e) {
     e.preventDefault();
-    login();
+    signIn();
   });
 });
 

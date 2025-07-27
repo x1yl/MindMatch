@@ -14,7 +14,7 @@ const initAuth0 = async () => {
   const query = window.location.search;
   if (query.includes('code=') && query.includes('state=')) {
     await auth0Client.handleRedirectCallback();
-    window.history.replaceState({}, document.title, '/');
+    window.history.replaceState({}, document.title, '/MindMatch');
   }
   
   await updateUI();
@@ -46,16 +46,30 @@ const updateUI = async () => {
   }
 };
 
-const login = async () => {
+const signUp = async () => {
   await auth0Client.loginWithRedirect({
     authorizationParams: {
-      redirect_uri: window.location.origin + "/MindMatch"
+      redirect_uri: window.location.origin + "/MindMatch",
+      screen_hint: "signup"
+    }
+  });
+};
+
+const signIn = async () => {
+  await auth0Client.loginWithRedirect({
+    authorizationParams: {
+      redirect_uri: window.location.origin + "/MindMatch",
+      screen_hint: "signin"
     }
   });
 };
 
 const logout = async () => {
-  await auth0Client.logout();
+  await auth0Client.logout(
+    {
+      returnTo: window.location.origin + "/MindMatch"
+    }
+  );
 };
 
 const getUser = async () => {
