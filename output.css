@@ -1,12 +1,13 @@
 /*! tailwindcss v4.1.11 | MIT License | https://tailwindcss.com */
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @layer properties;
 @layer theme, base, components, utilities;
 @layer theme {
   :root, :host {
-    --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-      "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: "Inter", Arial, Helvetica, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    --color-white: #fff;
     --spacing: 0.25rem;
     --container-4xl: 56rem;
     --text-lg: 1.125rem;
@@ -44,6 +45,12 @@
     --color-dark-1: #173626;
     --color-dark-2: #2d5340;
     --color-dark-3: #476b59;
+    --color-light-1-dark: #1a1a1a;
+    --color-light-2-dark: #2d2d2d;
+    --color-light-3-dark: #404040;
+    --color-dark-1-dark: #e0e0e0;
+    --color-dark-2-dark: #b0b0b0;
+    --color-dark-3-dark: #808080;
   }
 }
 @layer base {
@@ -270,6 +277,9 @@
   .grid {
     display: grid;
   }
+  .table {
+    display: table;
+  }
   .h-4 {
     height: calc(var(--spacing) * 4);
   }
@@ -300,11 +310,17 @@
   .min-w-\[120px\] {
     min-width: 120px;
   }
+  .border-collapse {
+    border-collapse: collapse;
+  }
   .transform {
     transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
   }
   .cursor-pointer {
     cursor: pointer;
+  }
+  .resize {
+    resize: both;
   }
   .flex-col {
     flex-direction: column;
@@ -382,6 +398,9 @@
   .text-left {
     text-align: left;
   }
+  .font-sans {
+    font-family: var(--font-sans);
+  }
   .text-4xl {
     font-size: var(--text-4xl);
     line-height: var(--tw-leading, var(--text-4xl--line-height));
@@ -415,6 +434,12 @@
   .text-light-1 {
     color: var(--color-light-1);
   }
+  .text-white {
+    color: var(--color-white);
+  }
+  .underline {
+    text-decoration-line: underline;
+  }
   .shadow-lg {
     --tw-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -426,6 +451,10 @@
   .shadow-xl {
     --tw-shadow: 0 20px 25px -5px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 8px 10px -6px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  }
+  .outline {
+    outline-style: var(--tw-outline-style);
+    outline-width: 1px;
   }
   .transition {
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events;
@@ -571,6 +600,64 @@
       line-height: var(--tw-leading, var(--text-8xl--line-height));
     }
   }
+  .dark\:border-dark-3-dark {
+    &:where(.dark, .dark *) {
+      border-color: var(--color-dark-3-dark);
+    }
+  }
+  .dark\:bg-light-1-dark {
+    &:where(.dark, .dark *) {
+      background-color: var(--color-light-1-dark);
+    }
+  }
+  .dark\:bg-light-2-dark {
+    &:where(.dark, .dark *) {
+      background-color: var(--color-light-2-dark);
+    }
+  }
+  .dark\:bg-light-3-dark {
+    &:where(.dark, .dark *) {
+      background-color: var(--color-light-3-dark);
+    }
+  }
+  .dark\:text-dark-1-dark {
+    &:where(.dark, .dark *) {
+      color: var(--color-dark-1-dark);
+    }
+  }
+  .dark\:text-dark-2-dark {
+    &:where(.dark, .dark *) {
+      color: var(--color-dark-2-dark);
+    }
+  }
+  .dark\:text-light-1-dark {
+    &:where(.dark, .dark *) {
+      color: var(--color-light-1-dark);
+    }
+  }
+  .dark\:hover\:bg-light-3-dark {
+    &:where(.dark, .dark *) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-light-3-dark);
+        }
+      }
+    }
+  }
+}
+@layer utilities {
+  .pattern-bg {
+    width: 100%;
+    height: 100%;
+    --color: #e1e1e1;
+    background-color: #f3f3f3;
+    background-image: linear-gradient( 0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent ), linear-gradient( 90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent );
+    background-size: 55px 55px;
+  }
+  .dark .pattern-bg {
+    --color: var(--color-light-3-dark);
+    background-color: #2d2d2d;
+  }
 }
 @property --tw-rotate-x {
   syntax: "*";
@@ -708,6 +795,11 @@
   inherits: false;
   initial-value: 0 0 #0000;
 }
+@property --tw-outline-style {
+  syntax: "*";
+  inherits: false;
+  initial-value: solid;
+}
 @property --tw-duration {
   syntax: "*";
   inherits: false;
@@ -764,6 +856,7 @@
       --tw-ring-offset-width: 0px;
       --tw-ring-offset-color: #fff;
       --tw-ring-offset-shadow: 0 0 #0000;
+      --tw-outline-style: solid;
       --tw-duration: initial;
       --tw-ease: initial;
       --tw-scale-x: 1;
