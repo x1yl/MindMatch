@@ -1,4 +1,3 @@
-// Theme management
 function updateTheme() {
   const isDark =
     localStorage.theme === "dark" ||
@@ -39,6 +38,24 @@ document.addEventListener("DOMContentLoaded", function () {
   systemBtn?.addEventListener("click", function () {
     localStorage.removeItem("theme");
     updateTheme();
+  });
+
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginLink = document.getElementById('loginLink');
+
+  loginBtn?.addEventListener('click', async function() {
+    const isAuthenticated = auth0Client && await auth0Client.isAuthenticated();
+    if (!isAuthenticated) {
+      await login();
+    }
+  });
+
+  logoutBtn?.addEventListener('click', logout);
+  
+  loginLink?.addEventListener('click', function(e) {
+    e.preventDefault();
+    login();
   });
 });
 
