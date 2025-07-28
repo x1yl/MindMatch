@@ -40,20 +40,25 @@ document.addEventListener("DOMContentLoaded", function () {
     updateTheme();
   });
 
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const loginLink = document.getElementById('loginLink');
+  const loginBtn = document.getElementById("loginBtn");
+  // const logoutBtn = document.getElementById('logoutBtn');
+  const loginLink = document.getElementById("loginLink");
+  const dashboardBtn = document.getElementById("dashboardBtn");
 
-  loginBtn?.addEventListener('click', async function() {
-    const isAuthenticated = auth0Client && await auth0Client.isAuthenticated();
+  loginBtn?.addEventListener("click", async function () {
+    const isAuthenticated =
+      auth0Client && (await auth0Client.isAuthenticated());
     if (!isAuthenticated) {
       await signUp();
     }
   });
 
-  logoutBtn?.addEventListener('click', logout);
-  
-  loginLink?.addEventListener('click', function(e) {
+  // logoutBtn?.addEventListener("click", logout);
+  dashboardBtn?.addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+  });
+
+  loginLink?.addEventListener("click", function (e) {
     e.preventDefault();
     signIn();
   });
