@@ -22,7 +22,7 @@ const initAuth0 = async () => {
 const updateUI = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   const loginBtn = document.getElementById("loginBtn");
-  // const logoutBtn = document.getElementById("logoutBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
   const dashboardBtn = document.getElementById("dashboardBtn");
   const loginLink = document.getElementById("loginLink");
   const userInfo = document.getElementById("userInfo");
@@ -33,14 +33,12 @@ const updateUI = async () => {
 
     loginBtn.classList.add("hidden");
     loginLink.classList.add("hidden");
-    // logoutBtn.classList.remove("hidden");
     dashboardBtn.classList.remove("hidden");
     userInfo.classList.remove("hidden");
     userName.textContent = user.name || user.email;
   } else {
     loginBtn.classList.remove("hidden");
     loginLink.classList.remove("hidden");
-    // logoutBtn.classList.add("hidden");
     dashboardBtn.classList.add("hidden");
     userInfo.classList.add("hidden");
   }
