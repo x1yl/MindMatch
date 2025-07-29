@@ -1,3 +1,4 @@
+let currentView = "week";
 let selectedMood = null;
 let moodData = [];
 let moodChart = null;
