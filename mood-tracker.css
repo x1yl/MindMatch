@@ -1,0 +1,128 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+:root {
+  --color-primary: #008040;
+  --color-primary-dark: #005a2d;
+  --color-light-1: #ffffff;
+  --color-light-2: #f4faf7;
+  --color-light-3: #deede6;
+  --color-dark-1: #173626;
+  --color-dark-2: #2d5340;
+  --color-dark-3: #476b59;
+  --color-light-1-dark: #1a1a1a;
+  --color-light-2-dark: #2d2d2d;
+  --color-light-3-dark: #404040;
+  --color-dark-1-dark: #e0e0e0;
+  --color-dark-2-dark: #b0b0b0;
+  --color-dark-3-dark: #808080;
+}
+
+body {
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+  background-color: var(--color-light-2);
+  color: var(--color-dark-1);
+}
+
+.dark body {
+  background-color: var(--color-light-2-dark);
+  color: var(--color-dark-1-dark);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+.bg-light-1 {
+  background-color: var(--color-light-1);
+}
+.bg-light-2 {
+  background-color: var(--color-light-2);
+}
+.bg-light-3 {
+  background-color: var(--color-light-3);
+}
+.text-dark-1 {
+  color: var(--color-dark-1);
+}
+.text-dark-2 {
+  color: var(--color-dark-2);
+}
+.text-dark-3 {
+  color: var(--color-dark-3);
+}
+.border-dark-3 {
+  border-color: var(--color-dark-3);
+}
+
+.dark .bg-light-1 {
+  background-color: var(--color-light-1-dark);
+}
+.dark .bg-light-2 {
+  background-color: var(--color-light-2-dark);
+}
+.dark .bg-light-3 {
+  background-color: var(--color-light-3-dark);
+}
+.dark .text-dark-1 {
+  color: var(--color-dark-1-dark);
+}
+.dark .text-dark-2 {
+  color: var(--color-dark-2-dark);
+}
+.dark .text-dark-3 {
+  color: var(--color-dark-3-dark);
+}
+.dark .border-dark-3 {
+  border-color: var(--color-dark-3-dark);
+}
+
+.mood-option {
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+}
+
+.mood-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 128, 64, 0.15);
+}
+
+.mood-option.selected {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 128, 64, 0.2);
+}
+
+.mood-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-animation {
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

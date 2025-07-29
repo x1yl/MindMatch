@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mood Tracker - MindMatch</title>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script
+      src="https://kit.fontawesome.com/480c99c053.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="output.css" />
+    <link rel="stylesheet" href="mood-tracker.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+
+  <body
+    class="bg-light-2 dark:bg-light-2-dark text-dark-1 dark:text-dark-1-dark font-sans"
+  >
+    <div
+      id="sidebarOverlay"
+      class="sidebar-overlay fixed inset-0 bg-black z-40"
+    ></div>
+
+    <div
+      id="sidebar"
+      class="sidebar fixed top-0 left-0 h-full w-80 bg-light-1 dark:bg-light-1-dark border-r border-dark-3 dark:border-dark-3-dark z-50 shadow-xl"
+    >
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+            Menu
+          </h2>
+          <button
+            id="closeSidebar"
+            class="w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times text-dark-1 dark:text-dark-1-dark"></i>
+          </button>
+        </div>
+      </div>
+      <a
+        href="./mood-tracker.html"
+        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+        >Mood Tracker</a
+      >
+      <a
+        href="./mood-tracker.html"
+        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+        >Coping Tools</a
+      >
+      <a
+        href="./mood-tracker.html"
+        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+        >My Journal</a
+      >
+      <a
+        href="./mood-tracker.html"
+        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+        >AI Therapist</a
+      >
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50 theme-button">
+      <button
+        class="bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        <i class="fas fa-sun text-dark-1 dark:text-dark-1-dark"></i>
+      </button>
+      <div
+        class="theme-dropdown absolute bottom-full right-0 mb-2 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[120px] overflow-hidden"
+      >
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-sun w-4 h-4"></i>
+          Light
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-moon w-4 h-4"></i>
+          Dark
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-desktop w-4 h-4"></i>
+          System
+        </button>
+      </div>
+    </div>
+
+    <nav
+      class="bg-light-1 dark:bg-light-1-dark border-b border-dark-3 dark:border-dark-3-dark"
+    >
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <button
+            id="hamburgerBtn"
+            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+          >
+            <i
+              class="fas fa-bars text-dark-1 dark:text-dark-1-dark text-lg"
+            ></i>
+          </button>
+
+          <div class="absolute left-1/2 transform -translate-x-1/2">
+            <h1 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h1>
+          </div>
+
+          <div class="flex items-center gap-3 relative profile-container">
+            <div
+              class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
+            >
+              <div
+                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
+              >
+                <i class="fas fa-user text-light-1 text-sm"></i>
+              </div>
+              <span
+                id="dashboardUserName"
+                class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
+                >ADMIN</span
+              >
+              <i
+                class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
+              ></i>
+            </div>
+
+            <div
+              class="profile-dropdown absolute top-full right-0 mt-4 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[160px] overflow-hidden z-50"
+            >
+              <div
+                class="px-4 py-3 border-b border-dark-3 dark:border-dark-3-dark"
+              >
+                <p
+                  class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
+                >
+                  ADMIN
+                </p>
+                <p class="text-xs text-dark-2 dark:text-dark-2-dark">
+                  admin@mindmatch.xyz
+                </p>
+              </div>
+              <button
+                id="settingsBtn"
+                class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-3"
+              >
+                <i
+                  class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark"
+                ></i>
+                Settings
+              </button>
+              <button
+                id="logoutBtn"
+                class="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3"
+              >
+                <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-dark-1 mb-2">
+          How are you feeling today?
+        </h2>
+        <p class="text-dark-2 text-lg">
+          Your feelings matter. Take a moment to check in with yourself.
+        </p>
+      </div>
+
+      <div class="text-center mb-8">
+        <div
+          class="inline-flex items-center gap-2 bg-light-1 px-4 py-2 rounded-full border border-dark-3"
+        >
+          <i class="fas fa-calendar-alt text-primary"></i>
+          <span id="currentDate" class="text-dark-1 font-medium"></span>
+        </div>
+      </div>
+
+      <div
+        class="bg-light-1 rounded-2xl p-8 shadow-lg border border-dark-3 mb-8"
+      >
+        <h3 class="text-xl font-semibold text-dark-1 mb-6 text-center">
+          Select your mood
+        </h3>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          <div
+            class="mood-option bg-light-2 rounded-xl p-4 text-center cursor-pointer"
+            data-mood="amazing"
+            data-value="5"
+          >
+            <div class="mood-emoji">😄</div>
+            <div class="font-medium text-dark-1">Amazing</div>
+            <div class="text-sm text-dark-2">Wonderful</div>
+          </div>
+
+          <div
+            class="mood-option bg-light-2 rounded-xl p-4 text-center cursor-pointer"
+            data-mood="good"
+            data-value="4"
+          >
+            <div class="mood-emoji">😊</div>
+            <div class="font-medium text-dark-1">Good</div>
+            <div class="text-sm text-dark-2">Happy</div>
+          </div>
+
+          <div
+            class="mood-option bg-light-2 rounded-xl p-4 text-center cursor-pointer"
+            data-mood="okay"
+            data-value="3"
+          >
+            <div class="mood-emoji">😐</div>
+            <div class="font-medium text-dark-1">Okay</div>
+            <div class="text-sm text-dark-2">Neutral</div>
+          </div>
+
+          <div
+            class="mood-option bg-light-2 rounded-xl p-4 text-center cursor-pointer"
+            data-mood="sad"
+            data-value="2"
+          >
+            <div class="mood-emoji">😔</div>
+            <div class="font-medium text-dark-1">Sad</div>
+            <div class="text-sm text-dark-2">Down</div>
+          </div>
+
+          <div
+            class="mood-option bg-light-2 rounded-xl p-4 text-center cursor-pointer"
+            data-mood="terrible"
+            data-value="1"
+          >
+            <div class="mood-emoji">😢</div>
+            <div class="font-medium text-dark-1">Terrible</div>
+            <div class="text-sm text-dark-2">Very sad</div>
+          </div>
+        </div>
+
+        <div class="border-t border-dark-3 pt-6">
+          <h4 class="text-lg font-medium text-dark-1 mb-4 text-center">
+            More ways to express yourself
+          </h4>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div
+              class="mood-option bg-light-2 rounded-lg p-3 text-center cursor-pointer"
+              data-mood="grateful"
+              data-value="4"
+            >
+              <div class="mood-emoji text-xl">🙏</div>
+              <div class="text-sm font-medium text-dark-1">Grateful</div>
+            </div>
+
+            <div
+              class="mood-option bg-light-2 rounded-lg p-3 text-center cursor-pointer"
+              data-mood="anxious"
+              data-value="2"
+            >
+              <div class="mood-emoji text-xl">😰</div>
+              <div class="text-sm font-medium text-dark-1">Anxious</div>
+            </div>
+
+            <div
+              class="mood-option bg-light-2 rounded-lg p-3 text-center cursor-pointer"
+              data-mood="peaceful"
+              data-value="4"
+            >
+              <div class="mood-emoji text-xl">🕊️</div>
+              <div class="text-sm font-medium text-dark-1">Peaceful</div>
+            </div>
+
+            <div
+              class="mood-option bg-light-2 rounded-lg p-3 text-center cursor-pointer"
+              data-mood="overwhelmed"
+              data-value="2"
+            >
+              <div class="mood-emoji text-xl">😵</div>
+              <div class="text-sm font-medium text-dark-1">Overwhelmed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-light-1 rounded-2xl p-8 shadow-lg border border-dark-3 mb-8"
+      >
+        <h3 class="text-xl font-semibold text-dark-1 mb-4">
+          What's on your mind? (Optional)
+        </h3>
+        <textarea
+          id="moodNotes"
+          placeholder="Share what's making you feel this way... Remember, your thoughts are private and safe here."
+          class="w-full h-32 p-4 border border-dark-3 rounded-xl bg-light-2 text-dark-1 placeholder-dark-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+        ></textarea>
+      </div>
+
+      <div class="text-center">
+        <button
+          id="saveMoodBtn"
+          class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          <i class="fas fa-heart mr-2"></i>
+          Save My Mood
+        </button>
+      </div>
+
+      <div
+        id="successMessage"
+        class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 hidden"
+      >
+        <i class="fas fa-check-circle mr-2"></i>
+        Mood saved successfully! 💚
+      </div>
+
+      <div
+        class="bg-light-1 rounded-2xl p-8 shadow-lg border border-dark-3 mb-8 mt-8"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-semibold text-dark-1">Your Mood Journey</h3>
+          <div class="flex gap-2">
+            <button
+              id="weekView"
+              class="px-3 py-1 rounded-lg bg-primary text-white text-sm font-medium"
+            >
+              7 Days
+            </button>
+            <button
+              id="monthView"
+              class="px-3 py-1 rounded-lg bg-light-3 text-dark-1 text-sm font-medium hover:bg-primary hover:text-white transition-colors"
+            >
+              30 Days
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <canvas id="moodChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span class="text-dark-2">Amazing (5)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span class="text-dark-2">Good (4)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <span class="text-dark-2">Okay (3)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+            <span class="text-dark-2">Sad (2)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <span class="text-dark-2">Terrible (1)</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="moodInsights"
+        class="bg-light-1 rounded-2xl p-8 shadow-lg border border-dark-3 mb-8"
+      >
+        <h3 class="text-xl font-semibold text-dark-1 mb-4">
+          Your Mood Insights
+        </h3>
+        <div id="insightsContent" class="grid md:grid-cols-2 gap-6"></div>
+      </div>
+
+      <div id="recentMoods" class="mt-12">
+        <h3 class="text-2xl font-bold text-dark-1 mb-6">Your Recent Moods</h3>
+        <div id="moodHistory" class="space-y-4"></div>
+      </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="mood-tracker.js"></script>
+    <script src="dashboard.js"></script>
+  </body>
+</html>
