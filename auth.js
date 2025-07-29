@@ -13,7 +13,7 @@ const initAuth0 = async () => {
   const query = window.location.search;
   if (query.includes("code=") && query.includes("state=")) {
     await auth0Client.handleRedirectCallback();
-    window.history.replaceState({}, document.title, "/");
+    window.history.replaceState({}, document.title, "/MindMatch");
   }
 
   await updateUI();
@@ -22,7 +22,6 @@ const initAuth0 = async () => {
 const updateUI = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
   const dashboardBtn = document.getElementById("dashboardBtn");
   const loginLink = document.getElementById("loginLink");
   const userInfo = document.getElementById("userInfo");

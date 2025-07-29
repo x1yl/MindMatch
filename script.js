@@ -55,13 +55,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // logoutBtn?.addEventListener("click", logout);
   dashboardBtn?.addEventListener("click", () => {
-    window.location.href = "./dashboard.html";
+    window.location.href = "dashboard.html";
   });
 
-  logoutBtn?.addEventListener("click", logout);
+  if (document.getElementById("logoutBtn")) {
+    const logoutBtn = document.getElementById("logoutBtn");
+    logoutBtn?.addEventListener("click", logout);
+  }
+
 
   loginLink?.addEventListener("click", function (e) {
-    e.preventDefault();
     signIn();
   });
 });
