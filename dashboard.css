@@ -40,9 +40,3 @@
   opacity: 0.67;
   visibility: visible;
 }
-.hamburger-icon {
-  transition: transform 0.3s ease;
-}
-.hamburger-icon.open {
-  transform: rotate(90deg);
-}
