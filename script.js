@@ -58,10 +58,9 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "./dashboard.html";
   });
 
-  logoutBtn?.addEventListener("click", logout);
+  // logoutBtn?.addEventListener("click", logout);
 
   loginLink?.addEventListener("click", function (e) {
-    e.preventDefault();
     signIn();
   });
 });
@@ -74,3 +73,4 @@ window
       updateTheme();
     }
   });
+

@@ -312,9 +312,6 @@
   .mb-16 {
     margin-bottom: calc(var(--spacing) * 16);
   }
-  .block {
-    display: block;
-  }
   .flex {
     display: flex;
   }
@@ -323,9 +320,6 @@
   }
   .hidden {
     display: none;
-  }
-  .table {
-    display: table;
   }
   .h-4 {
     height: calc(var(--spacing) * 4);

@@ -13,7 +13,7 @@ const initAuth0 = async () => {
   const query = window.location.search;
   if (query.includes("code=") && query.includes("state=")) {
     await auth0Client.handleRedirectCallback();
-    window.history.replaceState({}, document.title, "/");
+    window.history.replaceState({}, document.title, "/MindMatch");
   }
 
   await updateUI();
