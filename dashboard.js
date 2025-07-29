@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         dashboardUserName.textContent = user.name || user.email || "User";
       }
     } else {
-      window.location.href = "index.html";
+      window.location.href = "/";
     }
   } else if (isDevelopment) {
     const dashboardUserName = document.getElementById("dashboardUserName");
