@@ -30,7 +30,42 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  const closeSidebar = document.getElementById("closeSidebar");
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarOverlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebarMenu() {
+    sidebar.classList.remove("open");
+    sidebarOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
   hamburgerBtn.addEventListener("click", function () {
-    console.log("Hamburger menu clicked - implement sidebar toggle here");
+    if (sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    } else {
+      openSidebar();
+    }
+  });
+
+  closeSidebar.addEventListener("click", closeSidebarMenu);
+  sidebarOverlay.addEventListener("click", closeSidebarMenu);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    }
+  });
+
+  window.addEventListener("resize", function () {
+    if (window.innerWidth >= 1024 && sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    }
   });
 });
