@@ -17,6 +17,157 @@ const saveMoodBtn = document.getElementById("saveMoodBtn");
 const moodNotes = document.getElementById("moodNotes");
 const successMessage = document.getElementById("successMessage");
 
+const selfCareTips = {
+  declining: {
+    urgent: [
+      {
+        title: "Take Deep Breaths",
+        description:
+          "Try the 4-7-8 breathing technique: Inhale for 4, hold for 7, exhale for 8.",
+        icon: "fas fa-wind",
+        action: "Practice now for 2 minutes",
+        actionUrl: "https://www.healthline.com/health/4-7-8-breathing",
+      },
+      {
+        title: "Reach Out",
+        description:
+          "Contact a trusted friend, family member, or mental health professional.",
+        icon: "fas fa-phone",
+        action: "Call someone who cares",
+        actionUrl: "https://www.betterhelp.com/",
+      },
+      {
+        title: "Ground Yourself",
+        description:
+          "Use the 5-4-3-2-1 technique: 5 things you see, 4 you touch, 3 you hear, 2 you smell, 1 you taste.",
+        icon: "fas fa-hand-paper",
+        action: "Try grounding exercise",
+        actionUrl: "https://www.verywellmind.com/grounding-techniques-4586742",
+      },
+    ],
+    mild: [
+      {
+        title: "Practice Self-Compassion",
+        description:
+          "Treat yourself with the same kindness you'd show a good friend.",
+        icon: "fas fa-heart",
+        action: "Write yourself a kind note",
+        actionUrl: "https://self-compassion.org/",
+      },
+      {
+        title: "Stay Hydrated",
+        description:
+          "Dehydration can affect mood. Drink a glass of water mindfully.",
+        icon: "fas fa-tint",
+        action: "Drink water now",
+        actionUrl:
+          "https://www.cdc.gov/healthyweight/healthy_eating/water-and-healthier-drinks.html",
+      },
+      {
+        title: "Listen to Music",
+        description: "Put on your favorite calming or uplifting songs.",
+        icon: "fas fa-music",
+        action: "Play your comfort playlist",
+        actionUrl: "https://open.spotify.com/",
+      },
+      {
+        title: "Practice Gratitude",
+        description:
+          "Write down 3 things you're grateful for, no matter how small.",
+        icon: "fas fa-list",
+        action: "Start a gratitude list",
+        actionUrl: "https://www.happify.com/",
+      },
+    ],
+  },
+};
+
+function detectMoodDecline(moodHistory) {
+  if (!moodHistory || moodHistory.length < 2) return null;
+
+  const recent = moodHistory.slice(0, 7);
+  const currentMood = recent[0]?.value || 3;
+
+  let declineCount = 0;
+  let significantDecline = false;
+
+  for (let i = 1; i < recent.length; i++) {
+    if (recent[i].value > recent[i - 1].value) {
+      declineCount++;
+    }
+  }
+
+  if (recent.length >= 3) {
+    const firstThree =
+      recent.slice(-3).reduce((sum, entry) => sum + entry.value, 0) / 3;
+    const lastThree =
+      recent.slice(0, 3).reduce((sum, entry) => sum + entry.value, 0) / 3;
+    significantDecline = firstThree - lastThree >= 1;
+  }
+
+  if ((currentMood <= 2 && declineCount >= 2) || significantDecline) {
+    return currentMood <= 1 ? "urgent" : "mild";
+  }
+
+  return null;
+}
+
+function getRandomTips(severity, count = 2) {
+  const tips = selfCareTips.declining[severity];
+  const shuffled = [...tips].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
+
+function createTipCard(tip, severity) {
+  const urgentClass = severity === "urgent" ? "tip-urgent" : "tip-mild";
+  return `
+    <div class="tip-card ${urgentClass} rounded-xl p-6 mb-4">
+      <div class="flex items-start gap-4">
+        <div class="flex-shrink-0">
+          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+            <i class="${tip.icon} text-black dark:text-white text-xl"></i>
+          </div>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-semibold text-white text-lg mb-2">${tip.title}</h4>
+          <p class="text-white text-opacity-90 mb-3">${tip.description}</p>
+          <a href="${tip.actionUrl}" target="_blank" rel="noopener noreferrer">
+            <button class="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm">
+              ${tip.action} 
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function createDeclineAlert(severity) {
+  const isUrgent = severity === "urgent";
+  const alertClass = isUrgent
+    ? "bg-red-100 border-red-500 text-red-800"
+    : "bg-green-100 border-green-500 text-green-800";
+  const icon = isUrgent ? "fas fa-exclamation-triangle" : "fas fa-info-circle";
+  const title = isUrgent
+    ? "We Notice You're Struggling"
+    : "Your Mood Seems Lower";
+  const message = isUrgent
+    ? "Your recent mood entries show you might be having a difficult time. Please consider these immediate self-care strategies."
+    : "Your mood hasn't been the best. Here are some gentle ways to care for yourself.";
+
+  return `
+    <div class="${alertClass} border-l-4 p-4 rounded-r-lg mb-6">
+      <div class="flex items-center">
+        <i class="${icon} mr-3 text-lg"></i>
+        <div>
+          <h4 class="font-semibold">${title}</h4>
+          <p class="text-sm mt-1">${message}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 moodOptions.forEach((option) => {
   option.addEventListener("click", () => {
     moodOptions.forEach((opt) => opt.classList.remove("selected"));
@@ -110,6 +261,14 @@ updateMoodHistory();
 function initMoodChart() {
   const ctx = document.getElementById("moodChart").getContext("2d");
 
+  const moodColors = {
+    5: "#22c55e", // green
+    4: "#3b82f6", // blue
+    3: "#facc15", // yellow
+    2: "#f97316", // orange
+    1: "#ef4444", // red
+  };
+
   moodChart = new Chart(ctx, {
     type: "line",
     data: {
@@ -125,6 +284,7 @@ function initMoodChart() {
           tension: 0.4,
           pointBackgroundColor: function (context) {
             const value = context.parsed?.y;
+            return moodColors[value] || "#a3a3a3";
           },
           pointBorderColor: "#ffffff",
           pointBorderWidth: 2,
@@ -256,79 +416,146 @@ function updateMoodInsights() {
   const dominantMood = getDominantMood(recentWeek);
   const moodVariability = calculateMoodVariability(recentWeek);
 
-  insightsContent.innerHTML = `
-          <div class="bg-light-2 rounded-lg p-4">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                <i class="fas fa-chart-line text-primary"></i>
-              </div>
-              <div>
-                <h4 class="font-semibold text-dark-1">Weekly Average</h4>
-                <p class="text-2xl font-bold text-primary">${averageMood.toFixed(
-                  1
-                )}/5</p>
-              </div>
+  let regularInsightsHtml = `
+    <div class="bg-light-2 rounded-lg p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+          <i class="fas fa-chart-line text-primary"></i>
+        </div>
+        <div>
+          <h4 class="font-semibold text-dark-1">Weekly Average</h4>
+          <p class="text-2xl font-bold text-primary">${averageMood.toFixed(
+            1
+          )}/5</p>
+        </div>
+      </div>
+      <p class="text-sm text-dark-2">${getMoodDescription(averageMood)}</p>
+    </div>
+    
+    <div class="bg-light-2 rounded-lg p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
+          <i class="fas ${
+            moodTrend.direction === "up"
+              ? "fa-arrow-up text-green-500"
+              : moodTrend.direction === "down"
+              ? "fa-arrow-down text-red-500"
+              : "fa-minus text-yellow-500"
+          } text-2xl"></i>
+        </div>
+        <div>
+          <h4 class="font-semibold text-dark-1">Mood Trend</h4>
+          <p class="text-lg font-semibold ${
+            moodTrend.direction === "up"
+              ? "text-green-500"
+              : moodTrend.direction === "down"
+              ? "text-red-500"
+              : "text-yellow-500"
+          }">${moodTrend.description}</p>
+        </div>
+      </div>
+      <p class="text-sm text-dark-2">${moodTrend.message}</p>
+    </div>
+    
+    <div class="bg-light-2 rounded-lg p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
+          <span class="text-xl">${dominantMood.emoji}</span>
+        </div>
+        <div>
+          <h4 class="font-semibold text-dark-1">Most Common</h4>
+          <p class="text-lg font-semibold text-dark-1">${dominantMood.label}</p>
+        </div>
+      </div>
+      <p class="text-sm text-dark-2">You've felt ${dominantMood.label.toLowerCase()} most often this week</p>
+    </div>
+    
+    <div class="bg-light-2 rounded-lg p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
+          <i class="fas fa-balance-scale text-dark-2 dark:text-dark-2-dark"></i>
+        </div>
+        <div>
+          <h4 class="font-semibold text-dark-1">Stability</h4>
+          <p class="text-lg font-semibold text-dark-1">${
+            moodVariability.level
+          }</p>
+        </div>
+      </div>
+      <p class="text-sm text-dark-2">${moodVariability.message}</p>
+    </div>
+  `;
+
+  const declineLevel = detectMoodDecline(moodData);
+
+  let selfCareSuggestions = "";
+
+  if (declineLevel === "urgent" || averageMood < 1.3) {
+    const alertHtml = createDeclineAlert("urgent");
+    const tips = getRandomTips("urgent", 3);
+    const tipsHtml = tips.map((tip) => createTipCard(tip, "urgent")).join("");
+    selfCareSuggestions = `
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+        ${alertHtml}
+        <div class="space-y-4">
+          <h4 class="text-lg font-semibold text-dark-1 mb-4">
+            <i class="fas fa-heart text-red-500 mr-2"></i>
+            Self-Care Suggestions
+          </h4>
+          ${tipsHtml}
+        </div>
+        <div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-6">
+          <h4 class="font-semibold text-red-800 mb-4 flex items-center">
+            <i class="fas fa-phone text-red-600 mr-2"></i>
+            Need Immediate Support?
+          </h4>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="font-medium text-red-700">Crisis Text Line</p>
+              <p class="text-red-600">Text HOME to 741741</p>
             </div>
-            <p class="text-sm text-dark-2">${getMoodDescription(
-              averageMood
-            )}</p>
-          </div>
-          
-          <div class="bg-light-2 rounded-lg p-4">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center">
-                <i class="fas fa-trending-${
-                  moodTrend.direction === "up"
-                    ? "up"
-                    : moodTrend.direction === "down"
-                    ? "down"
-                    : "up"
-                } text-blue-500"></i>
-              </div>
-              <div>
-                <h4 class="font-semibold text-dark-1">Mood Trend</h4>
-                <p class="text-lg font-semibold ${
-                  moodTrend.direction === "up"
-                    ? "text-green-500"
-                    : moodTrend.direction === "down"
-                    ? "text-red-500"
-                    : "text-yellow-500"
-                }">${moodTrend.description}</p>
-              </div>
+            <div>
+              <p class="font-medium text-red-700">National Suicide Prevention Lifeline</p>
+              <p class="text-red-600">988</p>
             </div>
-            <p class="text-sm text-dark-2">${moodTrend.message}</p>
           </div>
-          
-          <div class="bg-light-2 rounded-lg p-4">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center">
-                <span class="text-xl">${dominantMood.emoji}</span>
-              </div>
-              <div>
-                <h4 class="font-semibold text-dark-1">Most Common</h4>
-                <p class="text-lg font-semibold text-dark-1">${
-                  dominantMood.label
-                }</p>
-              </div>
-            </div>
-            <p class="text-sm text-dark-2">You've felt ${dominantMood.label.toLowerCase()} most often this week</p>
-          </div>
-          
-          <div class="bg-light-2 rounded-lg p-4">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
-                <i class="fas fa-balance-scale text-orange-500"></i>
-              </div>
-              <div>
-                <h4 class="font-semibold text-dark-1">Stability</h4>
-                <p class="text-lg font-semibold text-dark-1">${
-                  moodVariability.level
-                }</p>
-              </div>
-            </div>
-            <p class="text-sm text-dark-2">${moodVariability.message}</p>
-          </div>
-        `;
+          <p class="text-red-600 text-xs mt-3">You are not alone. Professional help is available 24/7.</p>
+        </div>
+      </div>
+    `;
+  } else if (declineLevel === "mild" || averageMood < 3.5) {
+    const alertHtml = createDeclineAlert("mild");
+    const tips = getRandomTips("mild", 2);
+    const tipsHtml = tips.map((tip) => createTipCard(tip, "mild")).join("");
+    selfCareSuggestions = `
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+        ${alertHtml}
+        <div class="space-y-4">
+          <h4 class="text-lg font-semibold text-dark-1 mb-4">
+            <i class="fas fa-heart text-dark-2 dark:text-dark-2-dark mr-2"></i>
+            Gentle Self-Care Suggestions
+          </h4>
+          ${tipsHtml}
+        </div>
+      </div>
+    `;
+  } else if (moodData.length >= 3) {
+    const tips = getRandomTips("mild", 1);
+    const tipsHtml = tips.map((tip) => createTipCard(tip, "mild")).join("");
+    selfCareSuggestions = `
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+        <div class="space-y-4">
+          <h4 class="text-lg font-semibold text-dark-1 mb-4">
+            <i class="fas fa-heart text-primary mr-2"></i>
+            Self-Care Tip
+          </h4>
+          ${tipsHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  insightsContent.innerHTML = regularInsightsHtml + selfCareSuggestions;
 }
 
 function calculateMoodTrend(data) {
