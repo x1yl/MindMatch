@@ -82,6 +82,121 @@ const selfCareTips = {
   },
 };
 
+function getTodayDateString() {
+  const today = new Date();
+  return today.toLocaleDateString("en-CA");
+}
+
+function hasLoggedMoodToday() {
+  const todayString = getTodayDateString();
+  return moodData.some((entry) => {
+    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-CA");
+    return entryDate === todayString;
+  });
+}
+
+function getTodaysMoodEntry() {
+  const todayString = getTodayDateString();
+  return moodData.find((entry) => {
+    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-CA");
+    return entryDate === todayString;
+  });
+}
+
+function getTimeUntilMidnight() {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+
+  const timeLeft = midnight.getTime() - now.getTime();
+
+  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  return { hours, minutes, seconds, totalMs: timeLeft };
+}
+
+function formatTimeUntilMidnight() {
+  const time = getTimeUntilMidnight();
+
+  if (time.hours > 0) {
+    return `${time.hours}h ${time.minutes}m`;
+  } else if (time.minutes > 0) {
+    return `${time.minutes}m ${time.seconds}s`;
+  } else {
+    return `${time.seconds}s`;
+  }
+}
+
+function createAlreadyLoggedMessage() {
+  const todaysMood = getTodaysMoodEntry();
+  const timeLeft = formatTimeUntilMidnight();
+
+  return `
+    <div class="bg-light-2 dark:bg-dark-2 border border-primary dark:border-primary-dark rounded-xl p-6 text-center transition-colors">
+      <div class="mb-4">
+        <div class="w-16 h-16 bg-primary/10 dark:bg-primary-dark/20 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-check-circle text-primary dark:text-primary-dark text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-primary dark:text-light-2 mb-2">You've already logged your mood today!</h3>
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <span class="text-3xl">${todaysMood.emoji}</span>
+          <div class="text-left">
+            <div class="font-medium text-dark-1 dark:text-light-1">${
+              todaysMood.label
+            }</div>
+            <div class="text-sm text-dark-2 dark:text-light-2">${new Date(
+              todaysMood.timestamp
+            ).toLocaleTimeString()}</div>
+          </div>
+        </div>
+        ${
+          todaysMood.notes
+            ? `<p class="text-dark-2 dark:text-light-2 text-sm italic mb-3">"${todaysMood.notes}"</p>`
+            : ""
+        }
+      </div>
+      
+      <div class="bg-light-1 dark:bg-dark-1 rounded-lg p-4 border border-primary/30 dark:border-primary-dark/30">
+        <p class="text-primary dark:text-light-2 mb-2">
+          <i class="fas fa-clock mr-2"></i>
+          You can log your next mood in:
+        </p>
+        <div id="countdown" class="text-2xl font-bold text-primary dark:text-light-2 mb-2">${timeLeft}</div>
+        <p class="text-sm text-dark-2 dark:text-light-2">Come back tomorrow to track your mood again!</p>
+      </div>
+      
+      <button 
+        id="editTodaysMood" 
+        class="mt-4 bg-primary dark:bg-primary-dark hover:bg-primary/90 dark:hover:bg-primary-dark/90 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+      >
+        <i class="fas fa-edit mr-2"></i>
+        Edit Today's Mood
+      </button>
+    </div>
+  `;
+}
+
+function startCountdownTimer() {
+  const countdownElement = document.getElementById("countdown");
+  if (!countdownElement) return;
+
+  const timer = setInterval(() => {
+    const time = getTimeUntilMidnight();
+
+    if (time.totalMs <= 0) {
+      clearInterval(timer);
+      location.reload();
+      return;
+    }
+
+    countdownElement.textContent = formatTimeUntilMidnight();
+  }, 1000);
+
+  return timer;
+}
+
 function detectMoodDecline(moodHistory) {
   if (!moodHistory || moodHistory.length < 2) return null;
 
@@ -168,6 +283,94 @@ function createDeclineAlert(severity) {
   `;
 }
 
+function updateMoodInterface() {
+  const moodSelectionSection = document.querySelector(
+    ".bg-light-1.rounded-2xl"
+  );
+  const notesSection = moodSelectionSection.nextElementSibling;
+  const saveButtonContainer = notesSection.nextElementSibling;
+
+  if (hasLoggedMoodToday()) {
+    moodSelectionSection.style.display = "none";
+    notesSection.style.display = "none";
+    saveButtonContainer.style.display = "none";
+
+    const alreadyLoggedDiv = document.createElement("div");
+    alreadyLoggedDiv.id = "alreadyLoggedMessage";
+    alreadyLoggedDiv.innerHTML = createAlreadyLoggedMessage();
+
+    const dateDisplay = document.querySelector(
+      ".text-center.mb-8:nth-child(2)"
+    );
+    dateDisplay.insertAdjacentElement("afterend", alreadyLoggedDiv);
+
+    startCountdownTimer();
+
+    const editButton = document.getElementById("editTodaysMood");
+    editButton.addEventListener("click", () => {
+      const todaysMood = getTodaysMoodEntry();
+
+      document.getElementById("alreadyLoggedMessage").remove();
+
+      moodSelectionSection.style.display = "block";
+      notesSection.style.display = "block";
+      saveButtonContainer.style.display = "block";
+
+      const moodOption = document.querySelector(
+        `[data-mood="${todaysMood.mood}"]`
+      );
+      if (moodOption) {
+        document
+          .querySelectorAll(".mood-option")
+          .forEach((opt) => opt.classList.remove("selected"));
+        moodOption.classList.add("selected");
+        selectedMood = {
+          mood: todaysMood.mood,
+          value: todaysMood.value,
+          emoji: todaysMood.emoji,
+          label: todaysMood.label,
+        };
+        document.getElementById("saveMoodBtn").disabled = false;
+      }
+
+      document.getElementById("moodNotes").value = todaysMood.notes || "";
+
+      const saveBtn = document.getElementById("saveMoodBtn");
+      saveBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Update My Mood';
+    });
+  }
+}
+
+function saveMoodEntry() {
+  if (!selectedMood) return;
+
+  const moodEntry = {
+    ...selectedMood,
+    notes: document.getElementById("moodNotes").value.trim(),
+    timestamp: new Date().toISOString(),
+    date: new Date().toLocaleDateString(),
+  };
+
+  const todaysMood = getTodaysMoodEntry();
+  if (todaysMood) {
+    const todayString = getTodayDateString();
+    moodData = moodData.filter((entry) => {
+      const entryDate = new Date(entry.timestamp).toLocaleDateString("en-CA");
+      return entryDate !== todayString;
+    });
+  }
+
+  moodData.unshift(moodEntry);
+
+  showSuccessMessage();
+  resetForm();
+  updateMoodHistory();
+  updateMoodChart();
+  updateMoodInsights();
+
+  updateMoodInterface();
+}
+
 moodOptions.forEach((option) => {
   option.addEventListener("click", () => {
     moodOptions.forEach((opt) => opt.classList.remove("selected"));
@@ -185,27 +388,7 @@ moodOptions.forEach((option) => {
   });
 });
 
-saveMoodBtn.addEventListener("click", () => {
-  if (!selectedMood) return;
-
-  const moodEntry = {
-    ...selectedMood,
-    notes: moodNotes.value.trim(),
-    timestamp: new Date().toISOString(),
-    date: new Date().toLocaleDateString(),
-  };
-
-  moodData.unshift(moodEntry);
-
-  showSuccessMessage();
-
-  resetForm();
-
-  updateMoodHistory();
-
-  updateMoodChart();
-  updateMoodInsights();
-});
+document.getElementById("saveMoodBtn").addEventListener("click", saveMoodEntry);
 
 function showSuccessMessage() {
   successMessage.classList.remove("hidden");
@@ -787,6 +970,15 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(() => {
     updateChartTheme();
   }, 100);
+
+  updateMoodInterface();
+
+  setInterval(() => {
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+      location.reload();
+    }
+  }, 60000);
 });
 
 initMoodChart();
