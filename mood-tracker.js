@@ -258,6 +258,18 @@ function updateMoodHistory() {
 
 updateMoodHistory();
 
+function getThemeColors() {
+  const isDark = document.documentElement.classList.contains("dark");
+  return {
+    borderColor: isDark ? "#ffffff" : "var(--color-primary)",
+    backgroundColor: isDark
+      ? "rgba(255, 255, 255, 0.1)"
+      : "rgba(0, 128, 64, 0.1)",
+    gridColor: isDark ? "rgba(255, 255, 255, 0.1)" : "var(--color-light-3)",
+    tickColor: isDark ? "#ffffff" : "var(--color-dark-2)",
+  };
+}
+
 function initMoodChart() {
   const ctx = document.getElementById("moodChart").getContext("2d");
 
@@ -269,6 +281,8 @@ function initMoodChart() {
     1: "#ef4444", // red
   };
 
+  const themeColors = getThemeColors();
+
   moodChart = new Chart(ctx, {
     type: "line",
     data: {
@@ -277,8 +291,8 @@ function initMoodChart() {
         {
           label: "Mood Level",
           data: [],
-          borderColor: "var(--color-primary)",
-          backgroundColor: "rgba(0, 128, 64, 0.1)",
+          borderColor: themeColors.borderColor,
+          backgroundColor: themeColors.backgroundColor,
           borderWidth: 3,
           fill: true,
           tension: 0.4,
@@ -286,7 +300,7 @@ function initMoodChart() {
             const value = context.parsed?.y;
             return moodColors[value] || "#a3a3a3";
           },
-          pointBorderColor: "#ffffff",
+          pointBorderColor: themeColors.borderColor,
           pointBorderWidth: 2,
           pointRadius: 6,
           pointHoverRadius: 8,
@@ -342,19 +356,19 @@ function initMoodChart() {
               };
               return moodEmojis[value] || "";
             },
-            color: "var(--color-dark-2)",
+            color: themeColors.tickColor,
             font: {
               size: 16,
             },
           },
           grid: {
-            color: "var(--color-light-3)",
+            color: themeColors.gridColor,
             borderDash: [2, 2],
           },
         },
         x: {
           ticks: {
-            color: "var(--color-dark-2)",
+            color: themeColors.tickColor,
             maxTicksLimit: 7,
           },
           grid: {
@@ -364,6 +378,22 @@ function initMoodChart() {
       },
     },
   });
+}
+
+function updateChartTheme() {
+  if (!moodChart) return;
+
+  const themeColors = getThemeColors();
+
+  moodChart.data.datasets[0].borderColor = themeColors.borderColor;
+  moodChart.data.datasets[0].backgroundColor = themeColors.backgroundColor;
+  moodChart.data.datasets[0].pointBorderColor = themeColors.borderColor;
+
+  moodChart.options.scales.y.ticks.color = themeColors.tickColor;
+  moodChart.options.scales.y.grid.color = themeColors.gridColor;
+  moodChart.options.scales.x.ticks.color = themeColors.tickColor;
+
+  moodChart.update();
 }
 
 function updateMoodChart() {
@@ -712,6 +742,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
   const themeButton = document.querySelector(".theme-button > button");
   const themeDropdown = document.querySelector(".theme-dropdown");
   const themeOptions = themeDropdown.querySelectorAll("button");
@@ -737,9 +768,13 @@ document.addEventListener("DOMContentLoaded", function () {
           document.documentElement.classList.remove("dark");
         }
       }
+
+      updateChartTheme();
+
       themeDropdown.classList.remove("open");
     });
   });
+
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     document.documentElement.classList.add("dark");
@@ -748,6 +783,10 @@ document.addEventListener("DOMContentLoaded", function () {
   } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
     document.documentElement.classList.add("dark");
   }
+
+  setTimeout(() => {
+    updateChartTheme();
+  }, 100);
 });
 
 initMoodChart();
