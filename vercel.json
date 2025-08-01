@@ -1,7 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npx tailwindcss -i ./src/input.css -o ./output.css",
   "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "npm run build"
+      }
+    },
     {
       "src": "backend/server.js",
       "use": "@vercel/node"

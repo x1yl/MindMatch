@@ -1,18 +1,19 @@
 let auth0Client = null;
 
 const configureAuth0 = async () => {
-  const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
-  
+  const baseUrl =
+    window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, "/");
+
   auth0Client = await auth0.createAuth0Client({
     domain: "dev-2tt6eod8bvyz70gx.us.auth0.com",
     clientId: "xJBxZ5BQNfB0j6FrNY8KrQm3z72aSDvh",
     authorizationParams: {
       audience: "https://ericafk0001.github.io/MindMatch/",
       scope: "openid profile email read:moods create:moods delete:moods",
-      redirect_uri: baseUrl
+      redirect_uri: baseUrl,
     },
-    cacheLocation: 'localstorage',
-    useRefreshTokens: true
+    cacheLocation: "localstorage",
+    useRefreshTokens: true,
   });
 };
 
@@ -23,12 +24,13 @@ const initAuth0 = async () => {
   if (query.includes("code=") && query.includes("state=")) {
     try {
       await auth0Client.handleRedirectCallback();
-      const targetPage = localStorage.getItem('authTargetPage') || window.location.pathname;
-      localStorage.removeItem('authTargetPage');
+      const targetPage =
+        localStorage.getItem("authTargetPage") || window.location.pathname;
+      localStorage.removeItem("authTargetPage");
       window.history.replaceState({}, document.title, targetPage);
     } catch (error) {
-      console.error('Auth callback error:', error);
-      window.history.replaceState({}, document.title, '/');
+      console.error("Auth callback error:", error);
+      window.history.replaceState({}, document.title, "/");
     }
   }
 
@@ -60,22 +62,26 @@ const updateUI = async () => {
 };
 
 const signUp = async () => {
-  localStorage.setItem('authTargetPage', window.location.pathname);
-  
+  localStorage.setItem("authTargetPage", window.location.pathname);
+
   await auth0Client.loginWithRedirect({
     authorizationParams: {
-      redirect_uri: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/'),
+      redirect_uri:
+        window.location.origin +
+        window.location.pathname.replace(/\/[^\/]*$/, "/"),
       screen_hint: "signup",
     },
   });
 };
 
 const signIn = async () => {
-  localStorage.setItem('authTargetPage', window.location.pathname);
-  
+  localStorage.setItem("authTargetPage", window.location.pathname);
+
   await auth0Client.loginWithRedirect({
     authorizationParams: {
-      redirect_uri: window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/'),
+      redirect_uri:
+        window.location.origin +
+        window.location.pathname.replace(/\/[^\/]*$/, "/"),
       screen_hint: "signin",
     },
   });
@@ -99,7 +105,7 @@ const getToken = async () => {
     try {
       const token = await auth0Client.getTokenSilently({
         timeoutInSeconds: 30,
-        ignoreCache: false
+        ignoreCache: false,
       });
       return token;
     } catch (error) {
@@ -109,7 +115,7 @@ const getToken = async () => {
         error.error === "login_required" ||
         error.error === "interaction_required"
       ) {
-        localStorage.setItem('authTargetPage', window.location.pathname);
+        localStorage.setItem("authTargetPage", window.location.pathname);
         await auth0Client.loginWithRedirect();
       }
       throw error;
@@ -126,7 +132,7 @@ const isUserAuthenticated = async (retries = 3) => {
         return true;
       }
       if (i < retries - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     } catch (error) {
       console.error(`Auth check attempt ${i + 1} failed:`, error);
