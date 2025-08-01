@@ -14,10 +14,6 @@
     {
       "src": "/api/.*",
       "dest": "/backend/server.js"
-    },
-    {
-      "src": "/.*",
-      "dest": "/index.html"
     }
   ]
 }
