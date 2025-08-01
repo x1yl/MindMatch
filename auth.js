@@ -17,7 +17,7 @@ const initAuth0 = async () => {
   const query = window.location.search;
   if (query.includes("code=") && query.includes("state=")) {
     await auth0Client.handleRedirectCallback();
-    window.history.replaceState({}, document.title, "/MindMatch/");
+    window.history.replaceState({}, document.title, "/");
   }
 
   await updateUI();
@@ -81,12 +81,7 @@ const getToken = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   if (isAuthenticated) {
     try {
-      const token = await auth0Client.getTokenSilently({
-        authorizationParams: {
-          audience: "https://ericafk0001.github.io/MindMatch/",
-          scope: "openid profile email read:moods create:moods delete:moods",
-        },
-      });
+      const token = await auth0Client.getTokenSilently();
       return token;
     } catch (error) {
       console.error("Error getting token:", error);
@@ -94,12 +89,7 @@ const getToken = async () => {
         error.error === "consent_required" ||
         error.error === "login_required"
       ) {
-        await auth0Client.loginWithRedirect({
-          authorizationParams: {
-            audience: "https://ericafk0001.github.io/MindMatch/",
-            scope: "openid profile email read:moods create:moods delete:moods",
-          },
-        });
+        await auth0Client.loginWithRedirect();
       }
       throw error;
     }
