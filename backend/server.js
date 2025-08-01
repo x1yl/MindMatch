@@ -20,7 +20,7 @@ const {
 
 app.use(
   cors({
-    origin: ["http://localhost:5500", "https://ericafk0001.github.io"],
+    origin: ["http://localhost:5500", "https://ericafk0001.github.io", "https://mind-match-chi.vercel.app"],
     credentials: true,
   })
 );
