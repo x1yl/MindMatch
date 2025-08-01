@@ -234,20 +234,33 @@ function getRandomTips(severity, count = 2) {
 }
 
 function createTipCard(tip, severity) {
-  const urgentClass = severity === "urgent" ? "tip-urgent" : "tip-mild";
+  let bgClass, borderClass, textClass, iconBgClass;
+  if (severity === "urgent") {
+    bgClass =
+      "bg-gradient-to-br from-red-200 to-red-500 dark:from-red-900 dark:to-red-700";
+    borderClass = "border-l-4 border-red-500 dark:border-red-400";
+    textClass = "text-red-900 dark:text-red-100";
+    iconBgClass = "bg-white bg-opacity-20 dark:bg-red-800/40";
+  } else {
+    bgClass =
+      "bg-gradient-to-br from-green-200 to-green-500 dark:from-green-900 dark:to-green-700";
+    borderClass = "border-l-4 border-green-500 dark:border-green-400";
+    textClass = "text-green-900 dark:text-green-100";
+    iconBgClass = "bg-white bg-opacity-20 dark:bg-green-800/40";
+  }
   return `
-    <div class="tip-card ${urgentClass} rounded-xl p-6 mb-4">
+    <div class="tip-card ${bgClass} ${borderClass} rounded-xl p-6 mb-4 transition-colors duration-300">
       <div class="flex items-start gap-4">
         <div class="flex-shrink-0">
-          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+          <div class="w-12 h-12 ${iconBgClass} rounded-full flex items-center justify-center">
             <i class="${tip.icon} text-black dark:text-white text-xl"></i>
           </div>
         </div>
         <div class="flex-1">
-          <h4 class="font-semibold text-white text-lg mb-2">${tip.title}</h4>
-          <p class="text-white text-opacity-90 mb-3">${tip.description}</p>
+          <h4 class="font-semibold ${textClass} text-lg mb-2">${tip.title}</h4>
+          <p class="${textClass} text-opacity-90 mb-3">${tip.description}</p>
           <a href="${tip.actionUrl}" target="_blank" rel="noopener noreferrer">
-            <button class="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm">
+            <button class="bg-white dark:bg-dark-2 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm">
               ${tip.action} 
             </button>
           </a>
@@ -260,8 +273,8 @@ function createTipCard(tip, severity) {
 function createDeclineAlert(severity) {
   const isUrgent = severity === "urgent";
   const alertClass = isUrgent
-    ? "bg-red-100 border-red-500 text-red-800"
-    : "bg-green-100 border-green-500 text-green-800";
+    ? "bg-red-100 dark:bg-red-900 border-red-500 dark:border-red-400 text-red-800 dark:text-red-100"
+    : "bg-green-100 dark:bg-green-900 border-green-500 dark:border-green-400 text-green-800 dark:text-green-100";
   const icon = isUrgent ? "fas fa-exclamation-triangle" : "fas fa-info-circle";
   const title = isUrgent
     ? "We Notice You're Struggling"
@@ -708,31 +721,31 @@ function updateMoodInsights() {
     const tips = getRandomTips("urgent", 3);
     const tipsHtml = tips.map((tip) => createTipCard(tip, "urgent")).join("");
     selfCareSuggestions = `
-      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 dark:border-dark-2 pt-6">
         ${alertHtml}
         <div class="space-y-4">
-          <h4 class="text-lg font-semibold text-dark-1 mb-4">
-            <i class="fas fa-heart text-red-500 mr-2"></i>
+          <h4 class="text-lg font-semibold text-dark-1 dark:text-light-1 mb-4">
+            <i class="fas fa-heart text-red-500 dark:text-red-400 mr-2"></i>
             Self-Care Suggestions
           </h4>
           ${tipsHtml}
         </div>
-        <div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-6">
-          <h4 class="font-semibold text-red-800 mb-4 flex items-center">
-            <i class="fas fa-phone text-red-600 mr-2"></i>
+        <div class="mt-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-400 rounded-xl p-6">
+          <h4 class="font-semibold text-red-800 dark:text-red-100 mb-4 flex items-center">
+            <i class="fas fa-phone text-red-600 dark:text-red-400 mr-2"></i>
             Need Immediate Support?
           </h4>
           <div class="grid md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="font-medium text-red-700">Crisis Text Line</p>
-              <p class="text-red-600">Text HOME to 741741</p>
+              <p class="font-medium text-red-700 dark:text-red-200">Crisis Text Line</p>
+              <p class="text-red-600 dark:text-red-300">Text HOME to 741741</p>
             </div>
             <div>
-              <p class="font-medium text-red-700">National Suicide Prevention Lifeline</p>
-              <p class="text-red-600">988</p>
+              <p class="font-medium text-red-700 dark:text-red-200">National Suicide Prevention Lifeline</p>
+              <p class="text-red-600 dark:text-red-300">988</p>
             </div>
           </div>
-          <p class="text-red-600 text-xs mt-3">You are not alone. Professional help is available 24/7.</p>
+          <p class="text-red-600 dark:text-red-300 text-xs mt-3">You are not alone. Professional help is available 24/7.</p>
         </div>
       </div>
     `;
@@ -741,10 +754,10 @@ function updateMoodInsights() {
     const tips = getRandomTips("mild", 2);
     const tipsHtml = tips.map((tip) => createTipCard(tip, "mild")).join("");
     selfCareSuggestions = `
-      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 dark:border-dark-2 pt-6">
         ${alertHtml}
         <div class="space-y-4">
-          <h4 class="text-lg font-semibold text-dark-1 mb-4">
+          <h4 class="text-lg font-semibold text-dark-1 dark:text-light-1 mb-4">
             <i class="fas fa-heart text-dark-2 dark:text-dark-2-dark mr-2"></i>
             Gentle Self-Care Suggestions
           </h4>
@@ -756,10 +769,10 @@ function updateMoodInsights() {
     const tips = getRandomTips("mild", 1);
     const tipsHtml = tips.map((tip) => createTipCard(tip, "mild")).join("");
     selfCareSuggestions = `
-      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 dark:border-dark-2 pt-6">
         <div class="space-y-4">
-          <h4 class="text-lg font-semibold text-dark-1 mb-4">
-            <i class="fas fa-heart text-primary mr-2"></i>
+          <h4 class="text-lg font-semibold text-dark-1 dark:text-light-1 mb-4">
+            <i class="fas fa-heart text-primary dark:text-primary-dark mr-2"></i>
             Self-Care Tip
           </h4>
           ${tipsHtml}

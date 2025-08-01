@@ -127,16 +127,6 @@ body {
   }
 }
 
-.tip-urgent {
-  background: linear-gradient(135deg, #fecaca 0%, #ef4444 100%);
-  border-left: 4px solid #ef4444;
-}
-
-.tip-mild {
-  background: linear-gradient(135deg, #6ed092 0%, #22c55e 100%);
-  border-left: 4px solid #22c55e;
-}
-
 @keyframes slideIn {
   from {
     opacity: 0;
