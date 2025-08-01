@@ -82,15 +82,75 @@ const selfCareTips = {
   },
 };
 
+const API_BASE_URL = "https://mind-match-chi.vercel.app";
+
+async function makeAPICall(endpoint, options = {}) {
+  try {
+    const token = await getToken();
+    if (!token) {
+      throw new Error("No authentication token available");
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API call failed:", error);
+    throw error;
+  }
+}
+
+async function saveMoodToAPI(moodEntry) {
+  return await makeAPICall("/api/moods", {
+    method: "POST",
+    body: JSON.stringify({
+      mood: moodEntry.mood,
+      value: moodEntry.value,
+      emoji: moodEntry.emoji,
+      notes: moodEntry.notes,
+    }),
+  });
+}
+
+async function updateMoodToAPI(moodId, moodEntry) {
+  return await makeAPICall(`/api/moods/${moodId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      mood: moodEntry.mood,
+      value: moodEntry.value,
+      emoji: moodEntry.emoji,
+      notes: moodEntry.notes,
+    }),
+  });
+}
+
+async function getMoodsFromAPI() {
+  return await makeAPICall("/api/moods?limit=30");
+}
+
 function getTodayDateString() {
   const today = new Date();
-  return today.toLocaleDateString("en-CA");
+  return today.toLocaleDateString("en-US");
 }
 
 function hasLoggedMoodToday() {
   const todayString = getTodayDateString();
   return moodData.some((entry) => {
-    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-CA");
+    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-US");
     return entryDate === todayString;
   });
 }
@@ -98,7 +158,7 @@ function hasLoggedMoodToday() {
 function getTodaysMoodEntry() {
   const todayString = getTodayDateString();
   return moodData.find((entry) => {
-    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-CA");
+    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-US");
     return entryDate === todayString;
   });
 }
@@ -144,7 +204,7 @@ function createAlreadyLoggedMessage() {
           <span class="text-3xl">${todaysMood.emoji}</span>
           <div class="text-left">
             <div class="font-medium text-dark-1 dark:text-light-1">${
-              todaysMood.label
+              todaysMood.mood
             }</div>
             <div class="text-sm text-dark-2 dark:text-light-2">${new Date(
               todaysMood.timestamp
@@ -341,7 +401,6 @@ function updateMoodInterface() {
           mood: todaysMood.mood,
           value: todaysMood.value,
           emoji: todaysMood.emoji,
-          label: todaysMood.label,
         };
         document.getElementById("saveMoodBtn").disabled = false;
       }
@@ -354,7 +413,7 @@ function updateMoodInterface() {
   }
 }
 
-function saveMoodEntry() {
+async function saveMoodEntry() {
   if (!selectedMood) return;
 
   const moodEntry = {
@@ -364,24 +423,45 @@ function saveMoodEntry() {
     date: new Date().toLocaleDateString(),
   };
 
-  const todaysMood = getTodaysMoodEntry();
-  if (todaysMood) {
-    const todayString = getTodayDateString();
-    moodData = moodData.filter((entry) => {
-      const entryDate = new Date(entry.timestamp).toLocaleDateString("en-CA");
-      return entryDate !== todayString;
-    });
+  try {
+    const existingMood = getTodaysMoodEntry();
+    let isUpdate = false;
+
+    if (existingMood) {
+      await updateMoodToAPI(existingMood.id, moodEntry);
+
+      const existingIndex = moodData.findIndex(
+        (entry) => entry.id === existingMood.id
+      );
+      if (existingIndex !== -1) {
+        moodData[existingIndex] = {
+          ...existingMood,
+          ...moodEntry,
+          id: existingMood.id,
+        };
+      }
+      isUpdate = true;
+    } else {
+      const response = await saveMoodToAPI(moodEntry);
+
+      const newMoodEntry = {
+        ...moodEntry,
+        id: response.data?.id || response.id,
+      };
+      moodData.unshift(newMoodEntry);
+    }
+
+    showSuccessMessage(isUpdate);
+    resetForm();
+    updateMoodHistory();
+    updateMoodChart();
+    updateMoodInsights();
+    updateMoodInterface();
+  } catch (error) {
+    console.error("Failed to save mood:", error);
+    saveMoodBtn.disabled = false;
+    saveMoodBtn.innerHTML = '<i class="fas fa-heart mr-2"></i>Save My Mood';
   }
-
-  moodData.unshift(moodEntry);
-
-  showSuccessMessage();
-  resetForm();
-  updateMoodHistory();
-  updateMoodChart();
-  updateMoodInsights();
-
-  updateMoodInterface();
 }
 
 moodOptions.forEach((option) => {
@@ -394,8 +474,14 @@ moodOptions.forEach((option) => {
       mood: option.dataset.mood,
       value: parseInt(option.dataset.value),
       emoji: option.querySelector(".mood-emoji").textContent,
-      label: option.querySelector(".font-medium").textContent,
     };
+
+    const existingMood = getTodaysMoodEntry();
+    if (existingMood) {
+      saveMoodBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Update My Mood';
+    } else {
+      saveMoodBtn.innerHTML = '<i class="fas fa-heart mr-2"></i>Save My Mood';
+    }
 
     saveMoodBtn.disabled = false;
   });
@@ -403,7 +489,17 @@ moodOptions.forEach((option) => {
 
 document.getElementById("saveMoodBtn").addEventListener("click", saveMoodEntry);
 
-function showSuccessMessage() {
+function showSuccessMessage(isUpdate = false) {
+  const successMessage = document.getElementById("successMessage");
+
+  const messageText = isUpdate
+    ? "Mood updated successfully!"
+    : "Mood saved successfully!";
+  const messageElement = successMessage.querySelector("p") || successMessage;
+  if (messageElement.tagName === "P") {
+    messageElement.textContent = messageText;
+  }
+
   successMessage.classList.remove("hidden");
   successMessage.classList.add("success-animation");
 
@@ -418,6 +514,27 @@ function resetForm() {
   selectedMood = null;
   moodNotes.value = "";
   saveMoodBtn.disabled = true;
+
+  const existingMood = getTodaysMoodEntry();
+  if (existingMood) {
+    saveMoodBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Update My Mood';
+  } else {
+    saveMoodBtn.innerHTML = '<i class="fas fa-heart mr-2"></i>Save My Mood';
+  }
+}
+
+async function loadMoodData() {
+  try {
+    const response = await getMoodsFromAPI();
+    moodData = response.data.map((entry) => ({
+      ...entry,
+      date: new Date(entry.timestamp).toLocaleDateString(),
+    }));
+
+    updateMoodHistory();
+  } catch (error) {
+    console.error("Failed to load mood data:", error);
+  }
 }
 
 function updateMoodHistory() {
@@ -437,7 +554,7 @@ function updateMoodHistory() {
             <div class="flex items-center gap-3 mb-2">
               <span class="text-2xl">${entry.emoji}</span>
               <div>
-                <div class="font-medium text-dark-1">${entry.label}</div>
+                <div class="font-medium text-dark-1">${entry.mood}</div>
                 <div class="text-sm text-dark-2">${entry.date}</div>
               </div>
             </div>
@@ -452,8 +569,6 @@ function updateMoodHistory() {
     .join("");
 }
 
-updateMoodHistory();
-
 function getThemeColors() {
   const isDark = document.documentElement.classList.contains("dark");
   return {
@@ -463,6 +578,10 @@ function getThemeColors() {
       : "rgba(0, 128, 64, 0.1)",
     gridColor: isDark ? "rgba(255, 255, 255, 0.1)" : "var(--color-light-3)",
     tickColor: isDark ? "#ffffff" : "var(--color-dark-2)",
+    tooltipBg: isDark ? "#374151" : "#ffffff",
+    tooltipTitleColor: isDark ? "#ffffff" : "#1f2937",
+    tooltipBodyColor: isDark ? "#d1d5db" : "#6b7280",
+    tooltipBorderColor: isDark ? "#6b7280" : "#d1d5db",
   };
 }
 
@@ -511,10 +630,10 @@ function initMoodChart() {
           display: false,
         },
         tooltip: {
-          backgroundColor: "var(--color-light-1)",
-          titleColor: "var(--color-dark-1)",
-          bodyColor: "var(--color-dark-2)",
-          borderColor: "var(--color-dark-3)",
+          backgroundColor: themeColors.tooltipBg,
+          titleColor: themeColors.tooltipTitleColor,
+          bodyColor: themeColors.tooltipBodyColor,
+          borderColor: themeColors.tooltipBorderColor,
           borderWidth: 1,
           cornerRadius: 8,
           displayColors: false,
@@ -588,6 +707,13 @@ function updateChartTheme() {
   moodChart.options.scales.y.ticks.color = themeColors.tickColor;
   moodChart.options.scales.y.grid.color = themeColors.gridColor;
   moodChart.options.scales.x.ticks.color = themeColors.tickColor;
+
+  // Update tooltip colors
+  moodChart.options.plugins.tooltip.backgroundColor = themeColors.tooltipBg;
+  moodChart.options.plugins.tooltip.titleColor = themeColors.tooltipTitleColor;
+  moodChart.options.plugins.tooltip.bodyColor = themeColors.tooltipBodyColor;
+  moodChart.options.plugins.tooltip.borderColor =
+    themeColors.tooltipBorderColor;
 
   moodChart.update();
 }
@@ -690,10 +816,10 @@ function updateMoodInsights() {
         </div>
         <div>
           <h4 class="font-semibold text-dark-1">Most Common</h4>
-          <p class="text-lg font-semibold text-dark-1">${dominantMood.label}</p>
+          <p class="text-lg font-semibold text-dark-1">${dominantMood.mood}</p>
         </div>
       </div>
-      <p class="text-sm text-dark-2">You've felt ${dominantMood.label.toLowerCase()} most often this week</p>
+      <p class="text-sm text-dark-2">You've felt ${dominantMood.mood.toLowerCase()} most often this week</p>
     </div>
     
     <div class="bg-light-2 rounded-lg p-4">
@@ -929,7 +1055,29 @@ document.getElementById("monthView").addEventListener("click", function () {
   updateMoodChart();
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+  const checkAuthAndLoad = async () => {
+    try {
+      if (typeof auth0Client !== "undefined" && auth0Client) {
+        const isAuthenticated = await auth0Client.isAuthenticated();
+        if (isAuthenticated) {
+          await loadMoodData();
+          updateMoodInsights();
+          updateMoodChart();
+          updateMoodInterface();
+        } else {
+          window.location.href = "./index.html";
+        }
+      } else {
+        setTimeout(checkAuthAndLoad, 500);
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+    }
+  };
+
+  checkAuthAndLoad();
+
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", function () {
@@ -984,8 +1132,6 @@ document.addEventListener("DOMContentLoaded", function () {
     updateChartTheme();
   }, 100);
 
-  updateMoodInterface();
-
   setInterval(() => {
     const now = new Date();
     if (now.getHours() === 0 && now.getMinutes() === 0) {
@@ -995,5 +1141,3 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 initMoodChart();
-updateMoodChart();
-updateMoodInsights();
