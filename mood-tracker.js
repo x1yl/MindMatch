@@ -82,6 +82,181 @@ const selfCareTips = {
   },
 };
 
+const API_BASE_URL = "http://localhost:8081";
+
+async function makeAPICall(endpoint, options = {}) {
+  try {
+    const token = await getToken();
+    if (!token) {
+      throw new Error("No authentication token available");
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `API request failed: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API call failed:", error);
+    throw error;
+  }
+}
+
+async function saveMoodToAPI(moodEntry) {
+  return await makeAPICall("/api/moods", {
+    method: "POST",
+    body: JSON.stringify({
+      mood: moodEntry.mood,
+      value: moodEntry.value,
+      emoji: moodEntry.emoji,
+      notes: moodEntry.notes,
+    }),
+  });
+}
+
+async function updateMoodToAPI(moodId, moodEntry) {
+  return await makeAPICall(`/api/moods/${moodId}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      mood: moodEntry.mood,
+      value: moodEntry.value,
+      emoji: moodEntry.emoji,
+      notes: moodEntry.notes,
+    }),
+  });
+}
+
+async function getMoodsFromAPI() {
+  return await makeAPICall("/api/moods?limit=30");
+}
+
+function getTodayDateString() {
+  const today = new Date();
+  return today.toLocaleDateString("en-US");
+}
+
+function hasLoggedMoodToday() {
+  const todayString = getTodayDateString();
+  return moodData.some((entry) => {
+    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-US");
+    return entryDate === todayString;
+  });
+}
+
+function getTodaysMoodEntry() {
+  const todayString = getTodayDateString();
+  return moodData.find((entry) => {
+    const entryDate = new Date(entry.timestamp).toLocaleDateString("en-US");
+    return entryDate === todayString;
+  });
+}
+
+function getTimeUntilMidnight() {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+
+  const timeLeft = midnight.getTime() - now.getTime();
+
+  const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  return { hours, minutes, seconds, totalMs: timeLeft };
+}
+
+function formatTimeUntilMidnight() {
+  const time = getTimeUntilMidnight();
+
+  if (time.hours > 0) {
+    return `${time.hours}h ${time.minutes}m`;
+  } else if (time.minutes > 0) {
+    return `${time.minutes}m ${time.seconds}s`;
+  } else {
+    return `${time.seconds}s`;
+  }
+}
+
+function createAlreadyLoggedMessage() {
+  const todaysMood = getTodaysMoodEntry();
+  const timeLeft = formatTimeUntilMidnight();
+
+  return `
+    <div class="bg-light-2 dark:bg-dark-2 border border-primary dark:border-primary-dark rounded-xl p-6 text-center transition-colors">
+      <div class="mb-4">
+        <div class="w-16 h-16 bg-primary/10 dark:bg-primary-dark/20 rounded-full flex items-center justify-center mx-auto mb-3">
+          <i class="fas fa-check-circle text-primary dark:text-primary-dark text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-primary dark:text-light-2 mb-2">You've already logged your mood today!</h3>
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <span class="text-3xl">${todaysMood.emoji}</span>
+          <div class="text-left">
+            <div class="font-medium text-dark-1 dark:text-light-1">${
+              todaysMood.mood
+            }</div>
+            <div class="text-sm text-dark-2 dark:text-light-2">${new Date(
+              todaysMood.timestamp
+            ).toLocaleTimeString()}</div>
+          </div>
+        </div>
+        ${
+          todaysMood.notes
+            ? `<p class="text-dark-2 dark:text-light-2 text-sm italic mb-3">"${todaysMood.notes}"</p>`
+            : ""
+        }
+      </div>
+      
+      <div class="bg-light-1 dark:bg-dark-1 rounded-lg p-4 border border-primary/30 dark:border-primary-dark/30">
+        <p class="text-primary dark:text-light-2 mb-2">
+          <i class="fas fa-clock mr-2"></i>
+          You can log your next mood in:
+        </p>
+        <div id="countdown" class="text-2xl font-bold text-primary dark:text-light-2 mb-2">${timeLeft}</div>
+        <p class="text-sm text-dark-2 dark:text-light-2">Come back tomorrow to track your mood again!</p>
+      </div>
+      
+      <button 
+        id="editTodaysMood" 
+        class="mt-4 bg-primary dark:bg-primary-dark hover:bg-primary/90 dark:hover:bg-primary-dark/90 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+      >
+        <i class="fas fa-edit mr-2"></i>
+        Edit Today's Mood
+      </button>
+    </div>
+  `;
+}
+
+function startCountdownTimer() {
+  const countdownElement = document.getElementById("countdown");
+  if (!countdownElement) return;
+
+  const timer = setInterval(() => {
+    const time = getTimeUntilMidnight();
+
+    if (time.totalMs <= 0) {
+      clearInterval(timer);
+      location.reload();
+      return;
+    }
+
+    countdownElement.textContent = formatTimeUntilMidnight();
+  }, 1000);
+
+  return timer;
+}
+
 function detectMoodDecline(moodHistory) {
   if (!moodHistory || moodHistory.length < 2) return null;
 
@@ -119,20 +294,33 @@ function getRandomTips(severity, count = 2) {
 }
 
 function createTipCard(tip, severity) {
-  const urgentClass = severity === "urgent" ? "tip-urgent" : "tip-mild";
+  let bgClass, borderClass, textClass, iconBgClass;
+  if (severity === "urgent") {
+    bgClass =
+      "bg-gradient-to-br from-red-200 to-red-500 dark:from-red-900 dark:to-red-700";
+    borderClass = "border-l-4 border-red-500 dark:border-red-400";
+    textClass = "text-red-900 dark:text-red-100";
+    iconBgClass = "bg-white bg-opacity-20 dark:bg-red-800/40";
+  } else {
+    bgClass =
+      "bg-gradient-to-br from-green-200 to-green-500 dark:from-green-900 dark:to-green-700";
+    borderClass = "border-l-4 border-green-500 dark:border-green-400";
+    textClass = "text-green-900 dark:text-green-100";
+    iconBgClass = "bg-white bg-opacity-20 dark:bg-green-800/40";
+  }
   return `
-    <div class="tip-card ${urgentClass} rounded-xl p-6 mb-4">
+    <div class="tip-card ${bgClass} ${borderClass} rounded-xl p-6 mb-4 transition-colors duration-300">
       <div class="flex items-start gap-4">
         <div class="flex-shrink-0">
-          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+          <div class="w-12 h-12 ${iconBgClass} rounded-full flex items-center justify-center">
             <i class="${tip.icon} text-black dark:text-white text-xl"></i>
           </div>
         </div>
         <div class="flex-1">
-          <h4 class="font-semibold text-white text-lg mb-2">${tip.title}</h4>
-          <p class="text-white text-opacity-90 mb-3">${tip.description}</p>
+          <h4 class="font-semibold ${textClass} text-lg mb-2">${tip.title}</h4>
+          <p class="${textClass} text-opacity-90 mb-3">${tip.description}</p>
           <a href="${tip.actionUrl}" target="_blank" rel="noopener noreferrer">
-            <button class="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm">
+            <button class="bg-white dark:bg-dark-2 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm">
               ${tip.action} 
             </button>
           </a>
@@ -145,8 +333,8 @@ function createTipCard(tip, severity) {
 function createDeclineAlert(severity) {
   const isUrgent = severity === "urgent";
   const alertClass = isUrgent
-    ? "bg-red-100 border-red-500 text-red-800"
-    : "bg-green-100 border-green-500 text-green-800";
+    ? "bg-red-100 dark:bg-red-900 border-red-500 dark:border-red-400 text-red-800 dark:text-red-100"
+    : "bg-green-100 dark:bg-green-900 border-green-500 dark:border-green-400 text-green-800 dark:text-green-100";
   const icon = isUrgent ? "fas fa-exclamation-triangle" : "fas fa-info-circle";
   const title = isUrgent
     ? "We Notice You're Struggling"
@@ -168,6 +356,114 @@ function createDeclineAlert(severity) {
   `;
 }
 
+function updateMoodInterface() {
+  const moodSelectionSection = document.querySelector(
+    ".bg-light-1.rounded-2xl"
+  );
+  const notesSection = moodSelectionSection.nextElementSibling;
+  const saveButtonContainer = notesSection.nextElementSibling;
+
+  if (hasLoggedMoodToday()) {
+    moodSelectionSection.style.display = "none";
+    notesSection.style.display = "none";
+    saveButtonContainer.style.display = "none";
+
+    const alreadyLoggedDiv = document.createElement("div");
+    alreadyLoggedDiv.id = "alreadyLoggedMessage";
+    alreadyLoggedDiv.innerHTML = createAlreadyLoggedMessage();
+
+    const dateDisplay = document.querySelector(
+      ".text-center.mb-8:nth-child(2)"
+    );
+    dateDisplay.insertAdjacentElement("afterend", alreadyLoggedDiv);
+
+    startCountdownTimer();
+
+    const editButton = document.getElementById("editTodaysMood");
+    editButton.addEventListener("click", () => {
+      const todaysMood = getTodaysMoodEntry();
+
+      document.getElementById("alreadyLoggedMessage").remove();
+
+      moodSelectionSection.style.display = "block";
+      notesSection.style.display = "block";
+      saveButtonContainer.style.display = "block";
+
+      const moodOption = document.querySelector(
+        `[data-mood="${todaysMood.mood}"]`
+      );
+      if (moodOption) {
+        document
+          .querySelectorAll(".mood-option")
+          .forEach((opt) => opt.classList.remove("selected"));
+        moodOption.classList.add("selected");
+        selectedMood = {
+          mood: todaysMood.mood,
+          value: todaysMood.value,
+          emoji: todaysMood.emoji,
+        };
+        document.getElementById("saveMoodBtn").disabled = false;
+      }
+
+      document.getElementById("moodNotes").value = todaysMood.notes || "";
+
+      const saveBtn = document.getElementById("saveMoodBtn");
+      saveBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Update My Mood';
+    });
+  }
+}
+
+async function saveMoodEntry() {
+  if (!selectedMood) return;
+
+  const moodEntry = {
+    ...selectedMood,
+    notes: document.getElementById("moodNotes").value.trim(),
+    timestamp: new Date().toISOString(),
+    date: new Date().toLocaleDateString(),
+  };
+
+  try {
+    const existingMood = getTodaysMoodEntry();
+    let isUpdate = false;
+
+    if (existingMood) {
+      await updateMoodToAPI(existingMood.id, moodEntry);
+
+      const existingIndex = moodData.findIndex(
+        (entry) => entry.id === existingMood.id
+      );
+      if (existingIndex !== -1) {
+        moodData[existingIndex] = {
+          ...existingMood,
+          ...moodEntry,
+          id: existingMood.id,
+        };
+      }
+      isUpdate = true;
+    } else {
+      const response = await saveMoodToAPI(moodEntry);
+
+      const newMoodEntry = {
+        ...moodEntry,
+        id: response.data?.id || response.id,
+      };
+      moodData.unshift(newMoodEntry);
+    }
+
+    showSuccessMessage(isUpdate);
+    resetForm();
+    updateMoodHistory();
+    updateMoodChart();
+    updateMoodInsights();
+    updateMoodInterface();
+  } catch (error) {
+    console.error("Failed to save mood:", error);
+    saveMoodBtn.disabled = false;
+    saveMoodBtn.innerHTML = '<i class="fas fa-heart mr-2"></i>Save My Mood';
+  }
+}
+
 moodOptions.forEach((option) => {
   option.addEventListener("click", () => {
     moodOptions.forEach((opt) => opt.classList.remove("selected"));
@@ -178,36 +474,32 @@ moodOptions.forEach((option) => {
       mood: option.dataset.mood,
       value: parseInt(option.dataset.value),
       emoji: option.querySelector(".mood-emoji").textContent,
-      label: option.querySelector(".font-medium").textContent,
     };
+
+    const existingMood = getTodaysMoodEntry();
+    if (existingMood) {
+      saveMoodBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Update My Mood';
+    } else {
+      saveMoodBtn.innerHTML = '<i class="fas fa-heart mr-2"></i>Save My Mood';
+    }
 
     saveMoodBtn.disabled = false;
   });
 });
 
-saveMoodBtn.addEventListener("click", () => {
-  if (!selectedMood) return;
+document.getElementById("saveMoodBtn").addEventListener("click", saveMoodEntry);
 
-  const moodEntry = {
-    ...selectedMood,
-    notes: moodNotes.value.trim(),
-    timestamp: new Date().toISOString(),
-    date: new Date().toLocaleDateString(),
-  };
+function showSuccessMessage(isUpdate = false) {
+  const successMessage = document.getElementById("successMessage");
 
-  moodData.unshift(moodEntry);
+  const messageText = isUpdate
+    ? "Mood updated successfully!"
+    : "Mood saved successfully!";
+  const messageElement = successMessage.querySelector("p") || successMessage;
+  if (messageElement.tagName === "P") {
+    messageElement.textContent = messageText;
+  }
 
-  showSuccessMessage();
-
-  resetForm();
-
-  updateMoodHistory();
-
-  updateMoodChart();
-  updateMoodInsights();
-});
-
-function showSuccessMessage() {
   successMessage.classList.remove("hidden");
   successMessage.classList.add("success-animation");
 
@@ -222,6 +514,27 @@ function resetForm() {
   selectedMood = null;
   moodNotes.value = "";
   saveMoodBtn.disabled = true;
+
+  const existingMood = getTodaysMoodEntry();
+  if (existingMood) {
+    saveMoodBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Update My Mood';
+  } else {
+    saveMoodBtn.innerHTML = '<i class="fas fa-heart mr-2"></i>Save My Mood';
+  }
+}
+
+async function loadMoodData() {
+  try {
+    const response = await getMoodsFromAPI();
+    moodData = response.data.map((entry) => ({
+      ...entry,
+      date: new Date(entry.timestamp).toLocaleDateString(),
+    }));
+
+    updateMoodHistory();
+  } catch (error) {
+    console.error("Failed to load mood data:", error);
+  }
 }
 
 function updateMoodHistory() {
@@ -241,7 +554,7 @@ function updateMoodHistory() {
             <div class="flex items-center gap-3 mb-2">
               <span class="text-2xl">${entry.emoji}</span>
               <div>
-                <div class="font-medium text-dark-1">${entry.label}</div>
+                <div class="font-medium text-dark-1">${entry.mood}</div>
                 <div class="text-sm text-dark-2">${entry.date}</div>
               </div>
             </div>
@@ -256,7 +569,21 @@ function updateMoodHistory() {
     .join("");
 }
 
-updateMoodHistory();
+function getThemeColors() {
+  const isDark = document.documentElement.classList.contains("dark");
+  return {
+    borderColor: isDark ? "#ffffff" : "var(--color-primary)",
+    backgroundColor: isDark
+      ? "rgba(255, 255, 255, 0.1)"
+      : "rgba(0, 128, 64, 0.1)",
+    gridColor: isDark ? "rgba(255, 255, 255, 0.1)" : "var(--color-light-3)",
+    tickColor: isDark ? "#ffffff" : "var(--color-dark-2)",
+    tooltipBg: isDark ? "#374151" : "#ffffff",
+    tooltipTitleColor: isDark ? "#ffffff" : "#1f2937",
+    tooltipBodyColor: isDark ? "#d1d5db" : "#6b7280",
+    tooltipBorderColor: isDark ? "#6b7280" : "#d1d5db",
+  };
+}
 
 function initMoodChart() {
   const ctx = document.getElementById("moodChart").getContext("2d");
@@ -269,6 +596,8 @@ function initMoodChart() {
     1: "#ef4444", // red
   };
 
+  const themeColors = getThemeColors();
+
   moodChart = new Chart(ctx, {
     type: "line",
     data: {
@@ -277,8 +606,8 @@ function initMoodChart() {
         {
           label: "Mood Level",
           data: [],
-          borderColor: "var(--color-primary)",
-          backgroundColor: "rgba(0, 128, 64, 0.1)",
+          borderColor: themeColors.borderColor,
+          backgroundColor: themeColors.backgroundColor,
           borderWidth: 3,
           fill: true,
           tension: 0.4,
@@ -286,7 +615,7 @@ function initMoodChart() {
             const value = context.parsed?.y;
             return moodColors[value] || "#a3a3a3";
           },
-          pointBorderColor: "#ffffff",
+          pointBorderColor: themeColors.borderColor,
           pointBorderWidth: 2,
           pointRadius: 6,
           pointHoverRadius: 8,
@@ -301,10 +630,10 @@ function initMoodChart() {
           display: false,
         },
         tooltip: {
-          backgroundColor: "var(--color-light-1)",
-          titleColor: "var(--color-dark-1)",
-          bodyColor: "var(--color-dark-2)",
-          borderColor: "var(--color-dark-3)",
+          backgroundColor: themeColors.tooltipBg,
+          titleColor: themeColors.tooltipTitleColor,
+          bodyColor: themeColors.tooltipBodyColor,
+          borderColor: themeColors.tooltipBorderColor,
           borderWidth: 1,
           cornerRadius: 8,
           displayColors: false,
@@ -342,19 +671,19 @@ function initMoodChart() {
               };
               return moodEmojis[value] || "";
             },
-            color: "var(--color-dark-2)",
+            color: themeColors.tickColor,
             font: {
               size: 16,
             },
           },
           grid: {
-            color: "var(--color-light-3)",
+            color: themeColors.gridColor,
             borderDash: [2, 2],
           },
         },
         x: {
           ticks: {
-            color: "var(--color-dark-2)",
+            color: themeColors.tickColor,
             maxTicksLimit: 7,
           },
           grid: {
@@ -364,6 +693,29 @@ function initMoodChart() {
       },
     },
   });
+}
+
+function updateChartTheme() {
+  if (!moodChart) return;
+
+  const themeColors = getThemeColors();
+
+  moodChart.data.datasets[0].borderColor = themeColors.borderColor;
+  moodChart.data.datasets[0].backgroundColor = themeColors.backgroundColor;
+  moodChart.data.datasets[0].pointBorderColor = themeColors.borderColor;
+
+  moodChart.options.scales.y.ticks.color = themeColors.tickColor;
+  moodChart.options.scales.y.grid.color = themeColors.gridColor;
+  moodChart.options.scales.x.ticks.color = themeColors.tickColor;
+
+  // Update tooltip colors
+  moodChart.options.plugins.tooltip.backgroundColor = themeColors.tooltipBg;
+  moodChart.options.plugins.tooltip.titleColor = themeColors.tooltipTitleColor;
+  moodChart.options.plugins.tooltip.bodyColor = themeColors.tooltipBodyColor;
+  moodChart.options.plugins.tooltip.borderColor =
+    themeColors.tooltipBorderColor;
+
+  moodChart.update();
 }
 
 function updateMoodChart() {
@@ -464,10 +816,10 @@ function updateMoodInsights() {
         </div>
         <div>
           <h4 class="font-semibold text-dark-1">Most Common</h4>
-          <p class="text-lg font-semibold text-dark-1">${dominantMood.label}</p>
+          <p class="text-lg font-semibold text-dark-1">${dominantMood.mood}</p>
         </div>
       </div>
-      <p class="text-sm text-dark-2">You've felt ${dominantMood.label.toLowerCase()} most often this week</p>
+      <p class="text-sm text-dark-2">You've felt ${dominantMood.mood.toLowerCase()} most often this week</p>
     </div>
     
     <div class="bg-light-2 rounded-lg p-4">
@@ -495,31 +847,31 @@ function updateMoodInsights() {
     const tips = getRandomTips("urgent", 3);
     const tipsHtml = tips.map((tip) => createTipCard(tip, "urgent")).join("");
     selfCareSuggestions = `
-      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 dark:border-dark-2 pt-6">
         ${alertHtml}
         <div class="space-y-4">
-          <h4 class="text-lg font-semibold text-dark-1 mb-4">
-            <i class="fas fa-heart text-red-500 mr-2"></i>
+          <h4 class="text-lg font-semibold text-dark-1 dark:text-light-1 mb-4">
+            <i class="fas fa-heart text-red-500 dark:text-red-400 mr-2"></i>
             Self-Care Suggestions
           </h4>
           ${tipsHtml}
         </div>
-        <div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-6">
-          <h4 class="font-semibold text-red-800 mb-4 flex items-center">
-            <i class="fas fa-phone text-red-600 mr-2"></i>
+        <div class="mt-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-400 rounded-xl p-6">
+          <h4 class="font-semibold text-red-800 dark:text-red-100 mb-4 flex items-center">
+            <i class="fas fa-phone text-red-600 dark:text-red-400 mr-2"></i>
             Need Immediate Support?
           </h4>
           <div class="grid md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="font-medium text-red-700">Crisis Text Line</p>
-              <p class="text-red-600">Text HOME to 741741</p>
+              <p class="font-medium text-red-700 dark:text-red-200">Crisis Text Line</p>
+              <p class="text-red-600 dark:text-red-300">Text HOME to 741741</p>
             </div>
             <div>
-              <p class="font-medium text-red-700">National Suicide Prevention Lifeline</p>
-              <p class="text-red-600">988</p>
+              <p class="font-medium text-red-700 dark:text-red-200">National Suicide Prevention Lifeline</p>
+              <p class="text-red-600 dark:text-red-300">988</p>
             </div>
           </div>
-          <p class="text-red-600 text-xs mt-3">You are not alone. Professional help is available 24/7.</p>
+          <p class="text-red-600 dark:text-red-300 text-xs mt-3">You are not alone. Professional help is available 24/7.</p>
         </div>
       </div>
     `;
@@ -528,10 +880,10 @@ function updateMoodInsights() {
     const tips = getRandomTips("mild", 2);
     const tipsHtml = tips.map((tip) => createTipCard(tip, "mild")).join("");
     selfCareSuggestions = `
-      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 dark:border-dark-2 pt-6">
         ${alertHtml}
         <div class="space-y-4">
-          <h4 class="text-lg font-semibold text-dark-1 mb-4">
+          <h4 class="text-lg font-semibold text-dark-1 dark:text-light-1 mb-4">
             <i class="fas fa-heart text-dark-2 dark:text-dark-2-dark mr-2"></i>
             Gentle Self-Care Suggestions
           </h4>
@@ -543,10 +895,10 @@ function updateMoodInsights() {
     const tips = getRandomTips("mild", 1);
     const tipsHtml = tips.map((tip) => createTipCard(tip, "mild")).join("");
     selfCareSuggestions = `
-      <div class="md:col-span-2 mt-6 border-t border-dark-3 pt-6">
+      <div class="md:col-span-2 mt-6 border-t border-dark-3 dark:border-dark-2 pt-6">
         <div class="space-y-4">
-          <h4 class="text-lg font-semibold text-dark-1 mb-4">
-            <i class="fas fa-heart text-primary mr-2"></i>
+          <h4 class="text-lg font-semibold text-dark-1 dark:text-light-1 mb-4">
+            <i class="fas fa-heart text-primary dark:text-primary-dark mr-2"></i>
             Self-Care Tip
           </h4>
           ${tipsHtml}
@@ -703,7 +1055,29 @@ document.getElementById("monthView").addEventListener("click", function () {
   updateMoodChart();
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+  const checkAuthAndLoad = async () => {
+    try {
+      if (typeof auth0Client !== "undefined" && auth0Client) {
+        const isAuthenticated = await auth0Client.isAuthenticated();
+        if (isAuthenticated) {
+          await loadMoodData();
+          updateMoodInsights();
+          updateMoodChart();
+          updateMoodInterface();
+        } else {
+          window.location.href = "./index.html";
+        }
+      } else {
+        setTimeout(checkAuthAndLoad, 500);
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+    }
+  };
+
+  checkAuthAndLoad();
+
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", function () {
@@ -712,6 +1086,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
+
   const themeButton = document.querySelector(".theme-button > button");
   const themeDropdown = document.querySelector(".theme-dropdown");
   const themeOptions = themeDropdown.querySelectorAll("button");
@@ -737,9 +1112,13 @@ document.addEventListener("DOMContentLoaded", function () {
           document.documentElement.classList.remove("dark");
         }
       }
+
+      updateChartTheme();
+
       themeDropdown.classList.remove("open");
     });
   });
+
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     document.documentElement.classList.add("dark");
@@ -748,8 +1127,17 @@ document.addEventListener("DOMContentLoaded", function () {
   } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
     document.documentElement.classList.add("dark");
   }
+
+  setTimeout(() => {
+    updateChartTheme();
+  }, 100);
+
+  setInterval(() => {
+    const now = new Date();
+    if (now.getHours() === 0 && now.getMinutes() === 0) {
+      location.reload();
+    }
+  }, 60000);
 });
 
 initMoodChart();
-updateMoodChart();
-updateMoodInsights();

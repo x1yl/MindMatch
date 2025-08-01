@@ -4,6 +4,10 @@ const configureAuth0 = async () => {
   auth0Client = await auth0.createAuth0Client({
     domain: "dev-2tt6eod8bvyz70gx.us.auth0.com",
     clientId: "xJBxZ5BQNfB0j6FrNY8KrQm3z72aSDvh",
+    authorizationParams: {
+      audience: "https://ericafk0001.github.io/MindMatch/",
+      scope: "openid profile email read:moods create:moods delete:moods",
+    },
   });
 };
 
@@ -76,7 +80,29 @@ const getUser = async () => {
 const getToken = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   if (isAuthenticated) {
-    return await auth0Client.getTokenSilently();
+    try {
+      const token = await auth0Client.getTokenSilently({
+        authorizationParams: {
+          audience: "https://ericafk0001.github.io/MindMatch/",
+          scope: "openid profile email read:moods create:moods delete:moods",
+        },
+      });
+      return token;
+    } catch (error) {
+      console.error("Error getting token:", error);
+      if (
+        error.error === "consent_required" ||
+        error.error === "login_required"
+      ) {
+        await auth0Client.loginWithRedirect({
+          authorizationParams: {
+            audience: "https://ericafk0001.github.io/MindMatch/",
+            scope: "openid profile email read:moods create:moods delete:moods",
+          },
+        });
+      }
+      throw error;
+    }
   }
   return null;
 };
