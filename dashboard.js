@@ -6,26 +6,29 @@ document.documentElement.classList.toggle(
 );
 
 document.addEventListener("DOMContentLoaded", async function () {
-  // Check if running in development environment
-  const isDevelopment = window.location.href.startsWith(
-    "http://127.0.0.1:5500/"
-  );
 
-  if (auth0Client && !isDevelopment) {
+  if (auth0Client) {
     const isAuthenticated = await auth0Client.isAuthenticated();
     if (isAuthenticated) {
       const user = await auth0Client.getUser();
       const dashboardUserName = document.getElementById("dashboardUserName");
+      const welcomeText = document.getElementById("welcomeText");
+      const panelUserName = document.getElementById("panelUserName");
+      const dashboardUserEmail = document.getElementById("dashboardUserEmail");
       if (dashboardUserName) {
         dashboardUserName.textContent = user.name || user.email || "User";
       }
+      if (welcomeText) {
+        welcomeText.textContent = `Welcome, ${user.name || user.email || "User"}, how are you feeling today?`;
+      }
+      if (panelUserName) {
+        panelUserName.textContent = user.name || user.email || "User";
+      }
+      if (dashboardUserEmail) {
+        dashboardUserEmail.textContent = user.email || "";
+      }
     } else {
       window.location.href = "/";
-    }
-  } else if (isDevelopment) {
-    const dashboardUserName = document.getElementById("dashboardUserName");
-    if (dashboardUserName) {
-      dashboardUserName.textContent = "ADMIN";
     }
   }
 
