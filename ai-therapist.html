@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Therapist - MindMatch</title>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script
+      src="https://kit.fontawesome.com/480c99c053.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="output.css" />
+    <link rel="stylesheet" href="ai-therapist.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+
+  <body
+    class="bg-light-2 dark:bg-light-2-dark text-dark-1 dark:text-dark-1-dark font-sans"
+  >
+    <div
+      id="sidebarOverlay"
+      class="sidebar-overlay fixed inset-0 bg-black z-40"
+    ></div>
+
+    <div
+      id="sidebar"
+      class="sidebar fixed top-0 left-0 h-full w-80 bg-light-1 dark:bg-light-1-dark border-r border-dark-3 dark:border-dark-3-dark z-50 shadow-xl"
+    >
+      <div class="sidebar-header p-6">
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-brain text-white text-sm"></i>
+            </div>
+            <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h2>
+          </div>
+          <button
+            id="closeSidebar"
+            class="sidebar-close-btn w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times text-dark-1 dark:text-dark-1-dark"></i>
+          </button>
+        </div>
+      </div>
+
+      <nav class="px-0">
+        <a href="./dashboard.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <span class="sidebar-nav-text">Dashboard</span>
+        </a>
+        <a href="./mood-tracker.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <span class="sidebar-nav-text">Mood Tracker</span>
+        </a>
+        <a href="./coping-tools.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-toolbox"></i>
+          </div>
+          <span class="sidebar-nav-text">Coping Tools</span>
+        </a>
+        <a href="./journal.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <span class="sidebar-nav-text">My Journal</span>
+        </a>
+        <a href="./ai-therapist.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <span class="sidebar-nav-text">AI Therapist</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50 theme-button">
+      <button
+        class="bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        <i class="fas fa-sun text-dark-1 dark:text-dark-1-dark"></i>
+      </button>
+      <div
+        class="theme-dropdown absolute bottom-full right-0 mb-2 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[120px] overflow-hidden"
+      >
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-sun w-4 h-4"></i>
+          Light
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-moon w-4 h-4"></i>
+          Dark
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-desktop w-4 h-4"></i>
+          System
+        </button>
+      </div>
+    </div>
+
+    <nav
+      class="bg-light-1 dark:bg-light-1-dark border-b border-dark-3 dark:border-dark-3-dark"
+    >
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <button
+            id="hamburgerBtn"
+            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+          >
+            <i
+              class="fas fa-bars text-dark-1 dark:text-dark-1-dark text-lg"
+            ></i>
+          </button>
+
+          <div class="absolute left-1/2 transform -translate-x-1/2">
+            <h1 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h1>
+          </div>
+
+          <div class="flex items-center gap-3 relative profile-container">
+            <div
+              class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
+            >
+              <div
+                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
+              >
+                <i class="fas fa-user text-light-1 text-sm"></i>
+              </div>
+              <span
+                id="dashboardUserName"
+                class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
+                >ADMIN</span
+              >
+              <i
+                class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
+              ></i>
+            </div>
+
+            <div
+              class="profile-dropdown absolute top-full right-0 mt-4 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[160px] overflow-hidden z-50"
+            >
+              <div
+                class="px-4 py-3 border-b border-dark-3 dark:border-dark-3-dark"
+              >
+                <p
+                  class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
+                  id="panelUserName"
+                >
+                  ADMIN
+                </p>
+                <p
+                  class="text-xs text-dark-2 dark:text-dark-2-dark"
+                  id="dashboardUserEmail"
+                >
+                  admin@mindmatch.xyz
+                </p>
+              </div>
+              <button
+                id="settingsBtn"
+                class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-3"
+              >
+                <i
+                  class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark"
+                ></i>
+                Settings
+              </button>
+              <button
+                id="logoutBtn"
+                class="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3"
+              >
+                <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="h-screen flex flex-col">
+      <div
+        class="bg-light-1 dark:bg-light-1-dark shadow-lg border-t border-dark-3 dark:border-dark-3-dark flex-1 flex flex-col min-h-0"
+      >
+        <div
+          id="chatMessages"
+          class="flex-1 overflow-y-auto p-6 space-y-4 min-h-0"
+        >
+          <div class="flex items-start gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0"
+            >
+              <i class="fas fa-robot text-white text-sm"></i>
+            </div>
+            <div
+              class="bg-light-2 dark:bg-light-2-dark rounded-lg p-4 max-w-2xl"
+            >
+              <p class="text-dark-1 dark:text-dark-1-dark">
+                Hello! I'm your AI therapist.<br />
+                I'm here to offer a safe, judgment-free space where you can
+                share your thoughts and feelings. Whether you're going through a
+                tough time or just need someone to talk to, I'm here to
+                listen.<br /><br />
+                ⚠️ If you're in a crisis or need immediate help, please reach
+                out to a professional or emergency service.<br />
+                In the U.S., you can call or text 988 for the Suicide & Crisis
+                Lifeline (available 24/7).<br /><br />
+                So, what's on your mind today?
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="typingIndicator" class="hidden px-6 pb-2">
+          <div class="flex items-start gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0"
+            >
+              <i class="fas fa-robot text-white text-sm"></i>
+            </div>
+            <div class="bg-light-2 dark:bg-light-2-dark rounded-lg p-4">
+              <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-dark-3 dark:border-dark-3-dark p-4">
+          <div class="flex gap-3">
+            <textarea
+              id="messageInput"
+              placeholder="Share what's on your mind... I'm here to listen."
+              class="flex-1 p-4 border border-dark-3 dark:border-dark-3-dark rounded-xl bg-light-2 dark:bg-light-2-dark text-dark-1 dark:text-dark-1-dark placeholder-dark-2 dark:placeholder-light-4 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              rows="2"
+            ></textarea>
+            <button
+              id="sendMessage"
+              class="bg-primary hover:bg-primary-dark text-white px-6 py-4 rounded-xl font-medium transition-colors duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              <i class="fas fa-paper-plane"></i>
+              <span class="hidden sm:inline">Send</span>
+            </button>
+          </div>
+
+          <div id="quickActionsContainer" class="mt-4">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              <button
+                class="quick-action-btn bg-light-3 dark:bg-light-3-dark hover:bg-primary hover:text-white dark:hover:bg-primary text-dark-1 dark:text-dark-1-dark p-3 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                data-message="I'm feeling anxious and overwhelmed today."
+              >
+                <i class="fas fa-cloud-rain text-orange-500"></i>
+                <span>Feeling anxious</span>
+              </button>
+              <button
+                class="quick-action-btn bg-light-3 dark:bg-light-3-dark hover:bg-primary hover:text-white dark:hover:bg-primary text-dark-1 dark:text-dark-1-dark p-3 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                data-message="I've been feeling really sad and down lately."
+              >
+                <i class="fas fa-heart-broken text-blue-500"></i>
+                <span>Feeling sad</span>
+              </button>
+              <button
+                class="quick-action-btn bg-light-3 dark:bg-light-3-dark hover:bg-primary hover:text-white dark:hover:bg-primary text-dark-1 dark:text-dark-1-dark p-3 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                data-message="I'm dealing with a lot of stress right now."
+              >
+                <i class="fas fa-weight-hanging text-red-500"></i>
+                <span>Feeling stressed</span>
+              </button>
+              <button
+                class="quick-action-btn bg-light-3 dark:bg-light-3-dark hover:bg-primary hover:text-white dark:hover:bg-primary text-dark-1 dark:text-dark-1-dark p-3 rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                data-message="I just need someone to talk to today."
+              >
+                <i class="fas fa-comments text-green-500"></i>
+                <span>Need to talk</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div id="loadingIndicator" class="hidden text-center py-2">
+      <div
+        class="inline-flex items-center gap-2 text-dark-2 dark:text-dark-2-dark"
+      >
+        <div
+          class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"
+        ></div>
+        <span>AI is thinking...</span>
+      </div>
+    </div>
+
+    <div
+      id="disclaimerModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 hidden"
+    >
+      <div
+        class="bg-light-1 dark:bg-light-1-dark rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+      >
+        <div class="p-6">
+          <div class="flex items-start gap-3 mb-4">
+            <i
+              class="fas fa-info-circle text-blue-600 dark:text-blue-400 text-2xl mt-1"
+            ></i>
+            <div class="flex-1">
+              <h3
+                class="font-bold text-xl text-blue-800 dark:text-blue-200 mb-2"
+              >
+                Important Notice
+              </h3>
+              <p
+                class="text-blue-700 dark:text-blue-300 text-sm leading-relaxed"
+              >
+                This AI therapist is designed to provide support and guidance,
+                but it's not a replacement for professional mental health care.
+                If you're experiencing a crisis or having thoughts of self-harm,
+                please contact emergency services or a crisis hotline
+                immediately.
+              </p>
+            </div>
+          </div>
+
+          <div class="border-t border-blue-200 dark:border-blue-800 pt-4 mt-4">
+            <label class="flex items-start gap-3 mb-4 cursor-pointer">
+              <input
+                type="checkbox"
+                id="neverShowAgain"
+                class="mt-1 w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
+              />
+              <span class="text-sm text-dark-1 dark:text-dark-1-dark">
+                Don't show this message again
+              </span>
+            </label>
+
+            <div class="flex gap-3">
+              <button
+                id="acknowledgeBtn"
+                class="flex-1 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                I Understand
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script src="/ai-therapist.js"></script>
+    <script src="/dashboard.js"></script>
+  </body>
+</html>
