@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: tgymnich/fork-sync@v2.0.10
         with:
-          owner: x1yl
-          base: master
-          head: master
+          owner: ericafk0001
+          base: main
+          head: main
