@@ -26,39 +26,59 @@
       id="sidebar"
       class="sidebar fixed top-0 left-0 h-full w-80 bg-light-1 dark:bg-light-1-dark border-r border-dark-3 dark:border-dark-3-dark z-50 shadow-xl"
     >
-      <div class="p-6">
+      <div class="sidebar-header p-6">
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
-            Menu
-          </h2>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-brain text-white text-sm"></i>
+            </div>
+            <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h2>
+          </div>
           <button
             id="closeSidebar"
-            class="w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
+            class="sidebar-close-btn w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
           >
             <i class="fas fa-times text-dark-1 dark:text-dark-1-dark"></i>
           </button>
         </div>
       </div>
-      <a
-        href="./mood-tracker.html"
-        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
-        >Mood Tracker</a
-      >
-      <a
-        href="./mood-tracker.html"
-        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
-        >Coping Tools</a
-      >
-      <a
-        href="./mood-tracker.html"
-        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
-        >My Journal</a
-      >
-      <a
-        href="./mood-tracker.html"
-        class="block px-6 py-3 text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
-        >AI Therapist</a
-      >
+
+      <nav class="px-0">
+        <a href="./dashboard.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <span class="sidebar-nav-text">Dashboard</span>
+        </a>
+        <a href="./mood-tracker.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <span class="sidebar-nav-text">Mood Tracker</span>
+        </a>
+        <a href="./coping-tools.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-toolbox"></i>
+          </div>
+          <span class="sidebar-nav-text">Coping Tools</span>
+        </a>
+        <a href="./journal.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <span class="sidebar-nav-text">My Journal</span>
+        </a>
+        <a href="./ai-therapist.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <span class="sidebar-nav-text">AI Therapist</span>
+        </a>
+      </nav>
     </div>
 
     <div class="fixed bottom-6 right-6 z-50 theme-button">

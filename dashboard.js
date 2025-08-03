@@ -29,6 +29,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
+  initializeSidebar();
+
+  setActiveNavigation();
+});
+
+function initializeSidebar() {
   const hamburgerBtn = document.getElementById("hamburgerBtn");
   const sidebar = document.getElementById("sidebar");
   const sidebarOverlay = document.getElementById("sidebarOverlay");
@@ -68,4 +74,26 @@ document.addEventListener("DOMContentLoaded", async function () {
       closeSidebarMenu();
     }
   });
-});
+}
+
+function setActiveNavigation() {
+  const currentPage =
+    window.location.pathname.split("/").pop() || "dashboard.html";
+  const navItems = document.querySelectorAll(".sidebar-nav-item");
+
+  navItems.forEach((item) => {
+    const href = item.getAttribute("href");
+    if (href) {
+      const linkPage = href.split("/").pop();
+      if (
+        linkPage === currentPage ||
+        (currentPage === "dashboard.html" && linkPage === "./dashboard.html") ||
+        (currentPage === "" && linkPage === "./dashboard.html")
+      ) {
+        item.classList.add("active");
+      } else {
+        item.classList.remove("active");
+      }
+    }
+  });
+}
