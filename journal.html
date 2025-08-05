@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Journal - MindMatch</title>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script
+      src="https://kit.fontawesome.com/480c99c053.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="output.css" />
+    <link rel="stylesheet" href="journal.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+
+  <body
+    class="bg-light-1 dark:bg-light-1-dark text-dark-1 dark:text-dark-1-dark font-sans overflow-hidden"
+  >
+    <div
+      id="sidebarOverlay"
+      class="sidebar-overlay fixed inset-0 bg-black z-40"
+    ></div>
+
+    <div
+      id="sidebar"
+      class="sidebar fixed top-0 left-0 h-full w-80 bg-light-1 dark:bg-light-1-dark border-r border-dark-3 dark:border-dark-3-dark z-50 shadow-xl"
+    >
+      <div class="sidebar-header p-6">
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-brain text-white text-sm"></i>
+            </div>
+            <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h2>
+          </div>
+          <button
+            id="closeSidebar"
+            class="sidebar-close-btn w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times text-dark-1 dark:text-dark-1-dark"></i>
+          </button>
+        </div>
+      </div>
+
+      <nav class="px-0">
+        <a href="./dashboard.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <span class="sidebar-nav-text">Dashboard</span>
+        </a>
+        <a href="./mood-tracker.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <span class="sidebar-nav-text">Mood Tracker</span>
+        </a>
+        <a href="./coping-tools.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-toolbox"></i>
+          </div>
+          <span class="sidebar-nav-text">Coping Tools</span>
+        </a>
+        <a href="./journal.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <span class="sidebar-nav-text">My Journal</span>
+        </a>
+        <a href="./ai-therapist.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <span class="sidebar-nav-text">AI Therapist</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50 theme-button">
+      <button
+        class="bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        <i class="fas fa-sun text-dark-1 dark:text-dark-1-dark"></i>
+      </button>
+      <div
+        class="theme-dropdown absolute bottom-full right-0 mb-2 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[120px] overflow-hidden"
+      >
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-sun w-4 h-4"></i>
+          Light
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-moon w-4 h-4"></i>
+          Dark
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-desktop w-4 h-4"></i>
+          System
+        </button>
+      </div>
+    </div>
+
+    <nav
+      class="bg-light-1 dark:bg-light-1-dark border-b border-dark-3 dark:border-dark-3-dark z-30 relative"
+    >
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <button
+            id="hamburgerBtn"
+            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+          >
+            <i
+              class="fas fa-bars text-dark-1 dark:text-dark-1-dark text-lg"
+            ></i>
+          </button>
+
+          <div class="absolute left-1/2 transform -translate-x-1/2">
+            <h1 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Journal
+            </h1>
+          </div>
+
+          <div class="flex items-center gap-3 relative profile-container">
+            <div
+              class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
+            >
+              <div
+                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
+              >
+                <i class="fas fa-user text-light-1 text-sm"></i>
+              </div>
+              <span
+                id="dashboardUserName"
+                class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
+                >ADMIN</span
+              >
+              <i
+                class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
+              ></i>
+            </div>
+
+            <div
+              class="profile-dropdown absolute top-full right-0 mt-4 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[160px] overflow-hidden z-50"
+            >
+              <div
+                class="px-4 py-3 border-b border-dark-3 dark:border-dark-3-dark"
+              >
+                <p
+                  class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
+                  id="panelUserName"
+                >
+                  ADMIN
+                </p>
+                <p
+                  class="text-xs text-dark-2 dark:text-dark-2-dark"
+                  id="dashboardUserEmail"
+                >
+                  admin@mindmatch.xyz
+                </p>
+              </div>
+              <button
+                id="settingsBtn"
+                class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-3"
+              >
+                <i
+                  class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark"
+                ></i>
+                Settings
+              </button>
+              <button
+                id="logoutBtn"
+                class="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3"
+              >
+                <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="journal-container">
+      <textarea
+        id="journalTextarea"
+        placeholder="Start writing your thoughts..."
+        class="journal-textarea"
+        spellcheck="true"
+      ></textarea>
+
+      <div id="journalDock" class="journal-dock">
+        <div class="dock-content">
+          <button id="newEntryBtn" class="dock-btn" title="New Entry">
+            <i class="fas fa-plus"></i>
+            <span class="dock-btn-text">New Entry</span>
+          </button>
+
+          <button id="saveBtn" class="dock-btn" title="Save">
+            <i class="fas fa-save"></i>
+            <span class="dock-btn-text">Save</span>
+          </button>
+
+          <button id="entriesBtn" class="dock-btn" title="All Entries">
+            <i class="fas fa-list"></i>
+            <span class="dock-btn-text">Entries</span>
+          </button>
+
+          <div class="dock-divider"></div>
+
+          <button
+            id="wordCountBtn"
+            class="dock-btn dock-info"
+            title="Word Count"
+          >
+            <span id="wordCount" class="text-sm">0 words</span>
+          </button>
+
+          <button id="dateBtn" class="dock-btn dock-info" title="Current Date">
+            <span id="currentDate" class="text-sm"></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="dockHoverArea" class="dock-hover-area"></div>
+    </main>
+
+    <div id="entriesModal" class="entries-modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+            Your Journal Entries
+          </h2>
+          <button id="closeModal" class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="entriesList" class="entries-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="saveIndicator" class="save-indicator hidden">
+      <i class="fas fa-check"></i>
+      <span>Saved</span>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script src="/journal.js"></script>
+    <script src="/dashboard.js"></script>
+  </body>
+</html>
