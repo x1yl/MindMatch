@@ -45,6 +45,19 @@ async function initializeDatabase() {
       )
     `);
 
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS journal_entries (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        word_count INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_user_updated (user_id, updated_at DESC),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     connection.release();
     console.log("Database tables initialized successfully");
   } catch (error) {
@@ -189,6 +202,112 @@ async function testConnection() {
   }
 }
 
+async function createJournalEntry(journalEntry) {
+  try {
+    const [result] = await pool.execute(
+      `INSERT INTO journal_entries (id, user_id, content, word_count) 
+       VALUES (?, ?, ?, ?)`,
+      [
+        journalEntry.id,
+        journalEntry.userId,
+        journalEntry.content,
+        journalEntry.wordCount,
+      ]
+    );
+    return result;
+  } catch (error) {
+    console.error("Error creating journal entry:", error);
+    throw error;
+  }
+}
+
+async function updateJournalEntry(entryId, userId, journalEntry) {
+  try {
+    const [result] = await pool.execute(
+      `UPDATE journal_entries 
+       SET content = ?, word_count = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND user_id = ?`,
+      [
+        journalEntry.content,
+        journalEntry.wordCount,
+        entryId,
+        userId,
+      ]
+    );
+
+    if (result.affectedRows === 0) {
+      throw new Error("Journal entry not found or unauthorized");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error updating journal entry:", error);
+    throw error;
+  }
+}
+
+async function getJournalEntriesByUser(userId, limit = 30, offset = 0) {
+  try {
+    const limitInt = parseInt(limit, 10);
+    const offsetInt = parseInt(offset, 10);
+
+    if (isNaN(limitInt) || limitInt < 1) {
+      throw new Error("Invalid limit parameter");
+    }
+    if (isNaN(offsetInt) || offsetInt < 0) {
+      throw new Error("Invalid offset parameter");
+    }
+
+    const [rows] = await pool.execute(
+      `SELECT id, user_id, content, word_count, created_at, updated_at 
+       FROM journal_entries 
+       WHERE user_id = ? 
+       ORDER BY updated_at DESC 
+       LIMIT ${limitInt} OFFSET ${offsetInt}`,
+      [userId]
+    );
+
+    const [countResult] = await pool.execute(
+      "SELECT COUNT(*) as total FROM journal_entries WHERE user_id = ?",
+      [userId]
+    );
+
+    return {
+      data: rows,
+      total: countResult[0].total,
+    };
+  } catch (error) {
+    console.error("Error getting journal entries:", error);
+    throw error;
+  }
+}
+
+async function getJournalEntryById(entryId, userId) {
+  try {
+    const [rows] = await pool.execute(
+      "SELECT * FROM journal_entries WHERE id = ? AND user_id = ?",
+      [entryId, userId]
+    );
+    return rows[0] || null;
+  } catch (error) {
+    console.error("Error getting journal entry:", error);
+    throw error;
+  }
+}
+
+async function deleteJournalEntry(userId, entryId) {
+  try {
+    const [result] = await pool.execute(
+      "DELETE FROM journal_entries WHERE id = ? AND user_id = ?",
+      [entryId, userId]
+    );
+    return result;
+  } catch (error) {
+    console.error("Error deleting journal entry:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   pool,
   initializeDatabase,
@@ -199,4 +318,9 @@ module.exports = {
   getMoodEntriesByUser,
   deleteMoodEntry,
   testConnection,
+  createJournalEntry,
+  updateJournalEntry,
+  getJournalEntriesByUser,
+  getJournalEntryById,
+  deleteJournalEntry,
 };

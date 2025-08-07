@@ -82,7 +82,11 @@ const selfCareTips = {
   },
 };
 
-const API_BASE_URL = "https://mind-match-chi.vercel.app";
+const API_BASE_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"
+    : location.origin;
 
 async function makeAPICall(endpoint, options = {}) {
   try {

@@ -15,12 +15,19 @@ class Journal {
     this.hasUnsavedChanges = false;
     this.initialContent = "";
     this.isNewUser = false;
+    this.isOnline = navigator.onLine;
+    this.apiBaseUrl =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+        ? "http://localhost:8081"
+        : location.origin;
 
     this.initializeEventListeners();
     this.loadCurrentEntry();
     this.updateDate();
     this.updateWordCount();
     this.setupBeforeUnload();
+    this.setupOnlineOfflineHandlers();
   }
 
   initializeEventListeners() {
@@ -176,36 +183,217 @@ class Journal {
     return Date.now().toString();
   }
 
-  saveEntry(showIndicator = false) {
+  async getAuthToken() {
+    try {
+      if (auth0Client) {
+        return await auth0Client.getTokenSilently();
+      }
+      return null;
+    } catch (error) {
+      console.error("Error getting auth token:", error);
+      return null;
+    }
+  }
+
+  async apiRequest(endpoint, options = {}) {
+    const token = await this.getAuthToken();
+    if (!token) {
+      throw new Error("Authentication required");
+    }
+
+    const url = `${this.apiBaseUrl}/api${endpoint}`;
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      ...options,
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (jsonError) {
+          console.warn("Could not parse error response as JSON");
+        }
+        throw new Error(errorMessage);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        return { success: true };
+      }
+    } catch (error) {
+      console.error(`API request failed: ${error.message}`);
+      throw error;
+    }
+  }
+
+  setupOnlineOfflineHandlers() {
+    window.addEventListener("online", () => {
+      this.isOnline = true;
+      this.syncPendingChanges();
+    });
+
+    window.addEventListener("offline", () => {
+      this.isOnline = false;
+    });
+  }
+
+  async syncPendingChanges() {
+    try {
+      const pendingChanges = JSON.parse(
+        localStorage.getItem("pendingJournalChanges") || "[]"
+      );
+
+      for (const change of pendingChanges) {
+        if (change.type === "save") {
+          await this.saveToDatabase(change.entry);
+        } else if (change.type === "delete") {
+          await this.deleteFromDatabase(change.entryId);
+        }
+      }
+
+      localStorage.removeItem("pendingJournalChanges");
+
+      this.loadCurrentEntry();
+    } catch (error) {
+      console.error("Error syncing pending changes:", error);
+    }
+  }
+
+  async saveToDatabase(entry) {
+    try {
+      const entryExists = await this.checkEntryExists(entry.id);
+
+      if (entryExists) {
+        await this.apiRequest(`/journal/${entry.id}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            content: entry.content,
+            wordCount: entry.wordCount,
+          }),
+        });
+      } else {
+        await this.apiRequest("/journal", {
+          method: "POST",
+          body: JSON.stringify(entry),
+        });
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error saving to database:", error);
+      throw error;
+    }
+  }
+
+  async checkEntryExists(entryId) {
+    try {
+      await this.apiRequest(`/journal/${entryId}`);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async deleteFromDatabase(entryId) {
+    try {
+      const response = await this.apiRequest(`/journal/${entryId}`, {
+        method: "DELETE",
+      });
+      return true;
+    } catch (error) {
+      console.error("Error deleting from database:", error.message);
+      throw new Error(`Failed to delete entry from database: ${error.message}`);
+    }
+  }
+
+  addToPendingChanges(change) {
+    const pending = JSON.parse(
+      localStorage.getItem("pendingJournalChanges") || "[]"
+    );
+    pending.push({
+      ...change,
+      timestamp: new Date().toISOString(),
+    });
+    localStorage.setItem("pendingJournalChanges", JSON.stringify(pending));
+  }
+
+  async saveEntry(showIndicator = false) {
     const content = this.textarea.value.trim();
     if (!content) return;
 
     const entry = {
       id: this.currentEntryId || this.generateEntryId(),
       content: content,
-      lastModified: new Date().toISOString(),
       wordCount: content === "" ? 0 : content.split(/\s+/).length,
     };
 
     this.currentEntryId = entry.id;
 
-    const entries = this.getEntries();
+    try {
+      if (this.isOnline) {
+        await this.saveToDatabase(entry);
+
+        this.saveToLocalStorage(entry);
+      } else {
+        this.saveToLocalStorage(entry);
+        this.addToPendingChanges({ type: "save", entry });
+      }
+
+      this.hasUnsavedChanges = false;
+      this.initialContent = content;
+
+      if (showIndicator) {
+        this.showSaveIndicator();
+      }
+    } catch (error) {
+      console.error("Error saving entry:", error);
+
+      this.saveToLocalStorage(entry);
+      this.addToPendingChanges({ type: "save", entry });
+
+      this.hasUnsavedChanges = false;
+      this.initialContent = content;
+
+      if (showIndicator) {
+        this.showSaveIndicator("Saved locally (will sync when online)");
+      }
+    }
+  }
+
+  saveToLocalStorage(entry) {
+    const entries = this.getLocalEntries();
     const existingIndex = entries.findIndex((e) => e.id === entry.id);
 
+    const entryWithTimestamp = {
+      ...entry,
+      lastModified: new Date().toISOString(),
+    };
+
     if (existingIndex >= 0) {
-      entries[existingIndex] = entry;
+      entries[existingIndex] = entryWithTimestamp;
     } else {
-      entries.unshift(entry);
+      entries.unshift(entryWithTimestamp);
     }
 
     localStorage.setItem("journal_entries", JSON.stringify(entries));
     localStorage.setItem("journal_current", entry.id);
+  }
 
-    this.hasUnsavedChanges = false;
-    this.initialContent = content;
-
-    if (showIndicator) {
-      this.showSaveIndicator();
+  getLocalEntries() {
+    try {
+      return JSON.parse(localStorage.getItem("journal_entries") || "[]");
+    } catch {
+      return [];
     }
   }
 
@@ -216,7 +404,13 @@ class Journal {
 
   setupBeforeUnload() {
     window.addEventListener("beforeunload", (e) => {
-      if (this.hasUnsavedChanges && this.textarea.value.trim()) {
+      const currentContent = this.textarea.value.trim();
+      const hasRealChanges =
+        this.hasUnsavedChanges &&
+        currentContent &&
+        currentContent !== this.initialContent;
+
+      if (hasRealChanges) {
         e.preventDefault();
         e.returnValue =
           "You have unsaved changes. Are you sure you want to leave?";
@@ -226,27 +420,29 @@ class Journal {
   }
 
   autoSave() {
-    if (this.isNewUser && this.getEntries().length === 0) {
+    if (this.isNewUser && this.getLocalEntries().length === 0) {
       return;
     }
 
     clearTimeout(this.autoSaveTimeout);
-    this.autoSaveTimeout = setTimeout(() => {
-      this.saveEntry(false);
+    this.autoSaveTimeout = setTimeout(async () => {
+      if (this.hasUnsavedChanges && this.textarea.value.trim()) {
+        await this.saveEntry(false);
+      }
     }, 2000);
   }
 
-  newEntry() {
+  async newEntry() {
     if (this.hasUnsavedChanges && this.textarea.value.trim()) {
       if (
         confirm(
           "You have unsaved changes. Do you want to save them before creating a new entry?"
         )
       ) {
-        this.saveEntry(false);
+        await this.saveEntry(false);
       }
     } else if (this.textarea.value.trim()) {
-      this.saveEntry(false);
+      await this.saveEntry(false);
     }
 
     this.currentEntryId = this.generateEntryId();
@@ -259,8 +455,66 @@ class Journal {
     localStorage.setItem("journal_current", this.currentEntryId);
   }
 
-  loadCurrentEntry() {
-    const entries = this.getEntries();
+  async loadCurrentEntry() {
+    try {
+      if (this.isOnline) {
+        const result = await this.apiRequest("/journal?limit=1");
+        if (result.data && result.data.length > 0) {
+          const entry = result.data[0];
+          this.currentEntryId = entry.id;
+          this.textarea.value = entry.content;
+          this.initialContent = entry.content;
+          this.hasUnsavedChanges = false;
+          this.updateWordCount();
+          localStorage.setItem("journal_current", entry.id);
+          return;
+        } else {
+          await this.migrateFromLocalStorage();
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error loading from database:", error);
+    }
+
+    this.loadFromLocalStorage();
+  }
+
+  async migrateFromLocalStorage() {
+    const localEntries = this.getLocalEntries();
+    if (localEntries.length > 0) {
+      try {
+        for (const localEntry of localEntries) {
+          await this.saveToDatabase({
+            id: localEntry.id,
+            content: localEntry.content,
+            wordCount: localEntry.wordCount,
+          });
+        }
+
+        const mostRecent = localEntries[0];
+        this.currentEntryId = mostRecent.id;
+        this.textarea.value = mostRecent.content;
+        this.initialContent = mostRecent.content;
+        this.hasUnsavedChanges = false;
+        this.updateWordCount();
+        localStorage.setItem("journal_current", mostRecent.id);
+      } catch (error) {
+        console.error("Error migrating entries:", error);
+        this.loadFromLocalStorage();
+      }
+    } else {
+      this.isNewUser = true;
+      this.currentEntryId = this.generateEntryId();
+      this.textarea.value = "";
+      this.initialContent = "";
+      this.hasUnsavedChanges = false;
+      localStorage.setItem("journal_current", this.currentEntryId);
+    }
+  }
+
+  loadFromLocalStorage() {
+    const entries = this.getLocalEntries();
 
     if (entries.length === 0) {
       this.isNewUser = true;
@@ -296,22 +550,39 @@ class Journal {
     }
   }
 
-  loadEntry(entryId) {
-    const entries = this.getEntries();
+  async loadEntry(entryId) {
+    if (this.hasUnsavedChanges && this.textarea.value.trim()) {
+      if (
+        confirm(
+          "You have unsaved changes. Do you want to save them before loading this entry?"
+        )
+      ) {
+        await this.saveEntry(false);
+      }
+    } else if (this.textarea.value.trim()) {
+      await this.saveEntry(false);
+    }
+
+    try {
+      if (this.isOnline) {
+        const entry = await this.apiRequest(`/journal/${entryId}`);
+        this.currentEntryId = entry.id;
+        this.textarea.value = entry.content;
+        this.initialContent = entry.content;
+        this.hasUnsavedChanges = false;
+        this.updateWordCount();
+        localStorage.setItem("journal_current", entry.id);
+        this.hideEntriesModal();
+        this.textarea.focus();
+        return;
+      }
+    } catch (error) {
+      console.error("Error loading entry from database:", error);
+    }
+
+    const entries = this.getLocalEntries();
     const entry = entries.find((e) => e.id === entryId);
     if (entry) {
-      if (this.hasUnsavedChanges && this.textarea.value.trim()) {
-        if (
-          confirm(
-            "You have unsaved changes. Do you want to save them before loading this entry?"
-          )
-        ) {
-          this.saveEntry(false);
-        }
-      } else if (this.textarea.value.trim()) {
-        this.saveEntry(false);
-      }
-
       this.currentEntryId = entry.id;
       this.textarea.value = entry.content;
       this.initialContent = entry.content;
@@ -323,29 +594,45 @@ class Journal {
     }
   }
 
-  deleteEntry(entryId) {
+  async deleteEntry(entryId) {
     if (!confirm("Are you sure you want to delete this entry?")) return;
 
-    const entries = this.getEntries();
-    const filteredEntries = entries.filter((e) => e.id !== entryId);
-    localStorage.setItem("journal_entries", JSON.stringify(filteredEntries));
-
-    if (this.currentEntryId === entryId) {
-      this.textarea.value = "";
-      this.currentEntryId = null;
-      this.updateWordCount();
-      this.hasUnsavedChanges = false;
-      this.initialContent = "";
-
-      this.currentEntryId = this.generateEntryId();
-      localStorage.setItem("journal_current", this.currentEntryId);
-
-      if (filteredEntries.length === 0) {
-        this.isNewUser = true;
+    try {
+      if (this.isOnline) {
+        try {
+          await this.deleteFromDatabase(entryId);
+        } catch (dbError) {
+          console.error("Error deleting from database:", dbError);
+          this.addToPendingChanges({ type: "delete", entryId });
+        }
+      } else {
+        this.addToPendingChanges({ type: "delete", entryId });
       }
-    }
 
-    this.renderEntriesList();
+      const entries = this.getLocalEntries();
+      const filteredEntries = entries.filter((e) => e.id !== entryId);
+      localStorage.setItem("journal_entries", JSON.stringify(filteredEntries));
+
+      if (this.currentEntryId === entryId) {
+        this.textarea.value = "";
+        this.currentEntryId = this.generateEntryId();
+        this.updateWordCount();
+        this.hasUnsavedChanges = false;
+        this.initialContent = "";
+        localStorage.setItem("journal_current", this.currentEntryId);
+
+        if (filteredEntries.length === 0) {
+          this.isNewUser = true;
+        }
+      }
+
+      await this.renderEntriesList();
+
+      this.showSaveIndicator("Entry deleted successfully");
+    } catch (error) {
+      console.error("Error in deleteEntry:", error);
+      alert("Error deleting entry. Please try again.");
+    }
   }
 
   showEntriesModal() {
@@ -368,8 +655,26 @@ class Journal {
     }, 100);
   }
 
-  renderEntriesList() {
-    const entries = this.getEntries();
+  async renderEntriesList() {
+    let entries = [];
+
+    try {
+      if (this.isOnline) {
+        const result = await this.apiRequest("/journal?limit=50");
+        entries = result.data.map((entry) => ({
+          id: entry.id,
+          content: entry.content,
+          wordCount: entry.word_count,
+          lastModified: entry.updated_at,
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading entries from database:", error);
+    }
+
+    if (entries.length === 0) {
+      entries = this.getLocalEntries();
+    }
 
     if (entries.length === 0) {
       this.entriesList.innerHTML = `
@@ -426,6 +731,26 @@ class Journal {
       `;
       })
       .join("");
+  }
+
+  showSaveIndicator(message = "Saved!") {
+    const textSpan = this.saveIndicator.querySelector("span");
+    if (textSpan) {
+      textSpan.textContent = message;
+    } else {
+      this.saveIndicator.textContent = message;
+    }
+
+    this.saveIndicator.classList.remove("hidden");
+    this.saveIndicator.classList.add("show");
+
+    setTimeout(() => {
+      this.saveIndicator.classList.remove("show");
+
+      setTimeout(() => {
+        this.saveIndicator.classList.add("hidden");
+      }, 300);
+    }, 2000);
   }
 
   escapeHtml(text) {
