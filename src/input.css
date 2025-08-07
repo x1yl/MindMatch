@@ -22,6 +22,10 @@
   --color-dark-1-dark: #e0e0e0;
   --color-dark-2-dark: #b0b0b0;
   --color-dark-3-dark: #808080;
+
+  --color-sidebar-active: rgba(0, 128, 64, 0.1);
+  --color-sidebar-active-dark: rgba(0, 128, 64, 0.2);
+  --color-sidebar-border: rgba(0, 128, 64, 0.3);
 }
 
 @layer utilities {
