@@ -20,7 +20,7 @@ class Journal {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1"
         ? "http://localhost:8081"
-        : "https://mind-match-chi.vercel.app";
+        : location.origin;
 
     this.initializeEventListeners();
     this.loadCurrentEntry();
@@ -499,7 +499,6 @@ class Journal {
         this.hasUnsavedChanges = false;
         this.updateWordCount();
         localStorage.setItem("journal_current", mostRecent.id);
-
       } catch (error) {
         console.error("Error migrating entries:", error);
         this.loadFromLocalStorage();
