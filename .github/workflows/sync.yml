@@ -16,3 +16,8 @@ jobs:
           owner: ericafk0001
           base: main
           head: main
+      - uses: tgymnich/fork-sync@v2.0.10
+        with:
+          owner: ericafk0001
+          base: database
+          head: database
