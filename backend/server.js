@@ -31,10 +31,15 @@ app.use(
       "http://localhost:8081",
       "http://127.0.0.1:8081",
       "https://mindmatch.kevinzheng.fyi",
+      "https://preview.mindmatch.kevinzheng.fyi",
       "https://ericafk0001.github.io",
       "https://mind-match-chi.vercel.app",
+      "file://"
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    optionsSuccessStatus: 200
   })
 );
 
