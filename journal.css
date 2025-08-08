@@ -4,6 +4,30 @@
   overflow: hidden;
 }
 
+.journal-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.journal-line {
+  position: absolute;
+  left: 2rem;
+  right: 2rem;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  transition: none;
+}
+
+.dark .journal-line {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .journal-textarea {
   width: 100%;
   height: 100%;
@@ -18,24 +42,12 @@
   color: var(--color-dark-1);
   font-family: "Georgia", "Times New Roman", serif;
   transition: padding-bottom 0.3s ease;
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent calc(1.7em - 1px),
-    rgba(0, 0, 0, 0.08) calc(1.7em - 1px),
-    rgba(0, 0, 0, 0.08) 1.7em
-  );
-  background-attachment: local;
-  background-position: 0 0.15rem;
+  position: relative;
+  z-index: 2;
 }
 
 .dark .journal-textarea {
   color: var(--color-dark-1-dark);
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent calc(1.7em - 1px),
-    rgba(255, 255, 255, 0.06) calc(1.7em - 1px),
-    rgba(255, 255, 255, 0.06) 1.7em
-  );
 }
 
 .journal-textarea::placeholder {
@@ -438,7 +450,11 @@
     padding: 1rem;
     padding-top: calc(1rem + 0.15rem);
     font-size: 1rem;
-    background-position: 0 0.15rem;
+  }
+
+  .journal-line {
+    left: 1rem;
+    right: 1rem;
   }
 
   .dock-content {
