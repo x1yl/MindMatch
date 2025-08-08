@@ -6,7 +6,6 @@ document.documentElement.classList.toggle(
 );
 
 document.addEventListener("DOMContentLoaded", async function () {
-
   if (auth0Client) {
     const isAuthenticated = await auth0Client.isAuthenticated();
     if (isAuthenticated) {
@@ -19,7 +18,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         dashboardUserName.textContent = user.name || user.email || "User";
       }
       if (welcomeText) {
-        welcomeText.textContent = `Welcome, ${user.name || user.email || "User"}, how are you feeling today?`;
+        welcomeText.textContent = `Welcome, ${
+          user.name || user.email || "User"
+        }, how are you feeling today?`;
       }
       if (panelUserName) {
         panelUserName.textContent = user.name || user.email || "User";
