@@ -1,12 +1,9 @@
 document.addEventListener("DOMContentLoaded", async function () {
   const onAuthenticated = async () => {
-    const user = await auth0Client.getUser();
     const welcomeText = document.getElementById("welcomeText");
 
     if (welcomeText) {
-      welcomeText.textContent = `Welcome, ${
-        user.name || user.email || "User"
-      }, how are you feeling today?`;
+      welcomeText.innerHTML = `Hey, <span id="UserName">[Name]</span>, how are you feeling today?`;
     }
   };
 
