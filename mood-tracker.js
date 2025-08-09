@@ -1069,7 +1069,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   await checkAuthAndRedirect(onAuthenticated);
 
-  // Listen for theme changes to update chart
   window.addEventListener('themeChanged', function() {
     updateChartTheme();
   });
