@@ -34,7 +34,7 @@ const initAuth0 = async () => {
     }
   }
 
-  if (typeof updateUI === 'function') {
+  if (typeof updateUI === "function") {
     await updateUI();
   }
 };
@@ -83,7 +83,7 @@ const getFreshUser = async () => {
     try {
       await auth0Client.getTokenSilently({
         ignoreCache: true,
-        timeoutInSeconds: 30
+        timeoutInSeconds: 30,
       });
       return await auth0Client.getUser();
     } catch (error) {
@@ -101,7 +101,7 @@ const fetchFreshUserData = async () => {
       window.location.hostname === "127.0.0.1"
         ? "http://localhost:8081"
         : location.origin;
-        
+
     const token = await getToken();
     const response = await fetch(`${API_BASE_URL}/api/user-profile`, {
       headers: {
@@ -167,18 +167,23 @@ const isUserAuthenticated = async (retries = 3) => {
   return false;
 };
 
-const checkAuthAndRedirect = async (onAuthenticatedCallback, redirectPath = "/", maxRetries = 10) => {
+const checkAuthAndRedirect = async (
+  onAuthenticatedCallback,
+  redirectPath = "/",
+  maxRetries = 10
+) => {
   const attemptAuth = async (retryCount = 0) => {
     try {
       if (typeof auth0Client !== "undefined" && auth0Client) {
         const isAuthenticated = await auth0Client.isAuthenticated();
         if (isAuthenticated) {
-          if (typeof onAuthenticatedCallback === 'function') {
+          if (typeof onAuthenticatedCallback === "function") {
             await onAuthenticatedCallback();
           }
           initLogoutHandler();
           initSidebarHandler();
           await updateAllProfileElements();
+          setActiveNavigation();
         } else {
           window.location.href = redirectPath;
         }
@@ -186,7 +191,9 @@ const checkAuthAndRedirect = async (onAuthenticatedCallback, redirectPath = "/",
         if (retryCount < maxRetries) {
           setTimeout(() => attemptAuth(retryCount + 1), 500);
         } else {
-          console.error("Auth0 client failed to initialize after maximum retries");
+          console.error(
+            "Auth0 client failed to initialize after maximum retries"
+          );
           window.location.href = redirectPath;
         }
       }
@@ -263,27 +270,28 @@ const updateAllProfileElements = async () => {
     const freshUserData = await fetchFreshUserData();
     const auth0User = await auth0Client.getUser();
     const user = freshUserData || auth0User;
-    
+
     if (!user) return;
 
     const profilePictures = document.querySelectorAll('[id$="ProfilePicture"]');
-    profilePictures.forEach(img => {
+    profilePictures.forEach((img) => {
       const container = img.parentElement;
       const fallbackIcon = img.nextElementSibling;
-      
-      const isCustomAvatarType = user.picture && user.picture.includes("mindmatch.app/avatars/");
-      
+
+      const isCustomAvatarType =
+        user.picture && user.picture.includes("mindmatch.app/avatars/");
+
       if (user.picture && !isCustomAvatarType) {
         img.src = user.picture;
-        img.style.display = 'block';
-        if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
-          fallbackIcon.style.display = 'none';
+        img.style.display = "block";
+        if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+          fallbackIcon.style.display = "none";
         }
       } else if (isCustomAvatarType) {
         const avatarType = user.picture.match(/avatars\/(.+)\.png$/)?.[1];
-        
-        img.style.display = 'none';
-        
+
+        img.style.display = "none";
+
         if (fallbackIcon) {
           const avatarIcons = {
             user: "fas fa-user",
@@ -305,35 +313,54 @@ const updateAllProfileElements = async () => {
 
           const iconClass = avatarIcons[avatarType] || "fas fa-user";
           const colorClass = avatarColors[avatarType] || "bg-primary";
-          
+
           fallbackIcon.className = `${iconClass} text-light-1 text-sm`;
-          fallbackIcon.style.display = 'block';
-          
-          container.className = container.className.replace(/bg-\w+-\d+/, '') + ` ${colorClass}`;
+          fallbackIcon.style.display = "block";
+
+          container.className =
+            container.className.replace(/bg-\w+-\d+/, "") + ` ${colorClass}`;
         }
       } else {
-        img.style.display = 'none';
-        if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
-          fallbackIcon.style.display = 'block';
-          fallbackIcon.className = 'fas fa-user text-light-1 text-sm';
-          container.className = container.className.replace(/bg-\w+-\d+/, '') + ' bg-primary';
+        img.style.display = "none";
+        if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+          fallbackIcon.style.display = "block";
+          fallbackIcon.className = "fas fa-user text-light-1 text-sm";
+          container.className =
+            container.className.replace(/bg-\w+-\d+/, "") + " bg-primary";
         }
       }
     });
 
     const userNameElements = document.querySelectorAll('[id$="UserName"]');
-    userNameElements.forEach(element => {
-      element.textContent = user.name || user.nickname || user.email || 'User';
+    userNameElements.forEach((element) => {
+      element.textContent = user.name || user.nickname || user.email || "User";
     });
 
     const userEmailElements = document.querySelectorAll('[id$="UserEmail"]');
-    userEmailElements.forEach(element => {
-      element.textContent = user.email || '';
+    userEmailElements.forEach((element) => {
+      element.textContent = user.email || "";
     });
-
   } catch (error) {
-    console.error('Error updating profile elements:', error);
+    console.error("Error updating profile elements:", error);
   }
+};
+
+const setActiveNavigation = () => {
+  const currentPage = window.location.pathname.split("/").pop();
+  const navItems = document.querySelectorAll(".sidebar-nav-item");
+
+  navItems.forEach((item) => {
+    const href = item.getAttribute("href");
+    if (href) {
+      const linkPage = href.split("/").pop();
+
+      if (linkPage === currentPage) {
+        item.classList.add("active");
+      } else {
+        item.classList.remove("active");
+      }
+    }
+  });
 };
 
 document.addEventListener("DOMContentLoaded", initAuth0);
