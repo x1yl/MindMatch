@@ -1,24 +1,12 @@
 document.addEventListener("DOMContentLoaded", async function () {
   const onAuthenticated = async () => {
     const user = await auth0Client.getUser();
-    const dashboardUserName = document.getElementById("dashboardUserName");
     const welcomeText = document.getElementById("welcomeText");
-    const panelUserName = document.getElementById("panelUserName");
-    const dashboardUserEmail = document.getElementById("dashboardUserEmail");
     
-    if (dashboardUserName) {
-      dashboardUserName.textContent = user.name || user.email || "User";
-    }
     if (welcomeText) {
       welcomeText.textContent = `Welcome, ${
         user.name || user.email || "User"
       }, how are you feeling today?`;
-    }
-    if (panelUserName) {
-      panelUserName.textContent = user.name || user.email || "User";
-    }
-    if (dashboardUserEmail) {
-      dashboardUserEmail.textContent = user.email || "";
     }
     
     setActiveNavigation();

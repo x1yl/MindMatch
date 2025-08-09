@@ -135,15 +135,19 @@
             <div
               class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
             >
-              <div
-                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
-              >
+              <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+                <img 
+                  id="moodTrackerProfilePicture" 
+                  class="w-full h-full object-cover" 
+                  style="display: none;"
+                  alt="Profile"
+                />
                 <i class="fas fa-user text-light-1 text-sm"></i>
               </div>
               <span
-                id="dashboardUserName"
+                id="moodTrackerUserName"
                 class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
-                >ADMIN</span
+                >Loading...</span
               >
               <i
                 class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
@@ -158,15 +162,15 @@
               >
                 <p
                   class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
-                  id="panelUserName"
+                  id="moodTrackerPanelUserName"
                 >
-                  ADMIN
+                  Loading...
                 </p>
                 <p
                   class="text-xs text-dark-2 dark:text-dark-2-dark"
-                  id="dashboardUserEmail"
+                  id="moodTrackerUserEmail"
                 >
-                  admin@mindmatch.xyz
+                  
                 </p>
               </div>
               <a

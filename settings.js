@@ -29,7 +29,7 @@ async function initializeSettings() {
       currentUser.name || "User";
     document.getElementById("settingsUserEmail").textContent =
       currentUser.email || "";
-    document.getElementById("panelUserName").textContent =
+    document.getElementById("settingsPanelUserName").textContent =
       currentUser.name || "User";
 
     if (
@@ -48,28 +48,6 @@ async function initializeSettings() {
   } catch (error) {
     console.error("Error initializing settings:", error);
     showMessage("Failed to load user settings", "error");
-  }
-}
-
-async function fetchFreshUserData() {
-  try {
-    const token = await getToken();
-    const response = await fetch(`${API_BASE_URL}/api/user-profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (response.ok) {
-      const userData = await response.json();
-      return userData;
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error("Error fetching fresh user data:", error);
-    return null;
   }
 }
 
@@ -151,15 +129,21 @@ function initializeAvatarSelection() {
 
 function setCurrentAvatar(pictureUrl, avatarType = null) {
   const currentAvatar = document.getElementById("currentAvatar");
-  const navbarAvatar = document.getElementById("navbarAvatar");
+  const navbarAvatar = document.getElementById("settingsProfilePicture");
 
   if (pictureUrl && pictureUrl !== "" && !avatarType) {
     currentAvatar.className =
       "w-24 h-24 rounded-full overflow-hidden shadow-lg bg-gray-200";
     currentAvatar.innerHTML = `<img src="${pictureUrl}" alt="Profile Picture" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\"fas fa-user text-gray-500 text-2xl\\"></i>'; this.parentElement.classList.add('flex', 'items-center', 'justify-center');">`;
 
-    navbarAvatar.className = "w-8 h-8 rounded-full overflow-hidden bg-gray-200";
-    navbarAvatar.innerHTML = `<img src="${pictureUrl}" alt="Profile" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\"fas fa-user text-gray-500 text-xs\\"></i>'; this.parentElement.classList.add('flex', 'items-center', 'justify-center');">`;
+    if (navbarAvatar) {
+      navbarAvatar.src = pictureUrl;
+      navbarAvatar.style.display = 'block';
+      const fallbackIcon = navbarAvatar.nextElementSibling;
+      if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
+        fallbackIcon.style.display = 'none';
+      }
+    }
 
     document
       .querySelectorAll(".avatar-option")
@@ -189,8 +173,13 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
     currentAvatar.className = `w-24 h-24 ${colorClass} rounded-full flex items-center justify-center shadow-lg`;
     currentAvatar.innerHTML = `<i class="${iconClass} text-white text-2xl"></i>`;
 
-    navbarAvatar.className = `w-8 h-8 ${colorClass} rounded-full flex items-center justify-center`;
-    navbarAvatar.innerHTML = `<i class="${iconClass} text-light-1 text-sm"></i>`;
+    if (navbarAvatar) {
+      navbarAvatar.style.display = 'none';
+      const fallbackIcon = navbarAvatar.nextElementSibling;
+      if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
+        fallbackIcon.style.display = 'block';
+      }
+    }
 
     document.querySelectorAll(".avatar-option").forEach((opt) => {
       opt.classList.remove("active");
@@ -203,9 +192,17 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
       "w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-lg";
     currentAvatar.innerHTML = '<i class="fas fa-user text-white text-2xl"></i>';
 
-    navbarAvatar.className =
-      "w-8 h-8 bg-primary rounded-full flex items-center justify-center";
-    navbarAvatar.innerHTML = '<i class="fas fa-user text-light-1 text-sm"></i>';
+    if (navbarAvatar) {
+      navbarAvatar.style.display = 'none';
+      const fallbackIcon = navbarAvatar.nextElementSibling;
+      if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
+        fallbackIcon.style.display = 'block';
+      }
+    }
+  }
+  
+  if (typeof updateAllProfileElements === 'function') {
+    updateAllProfileElements();
   }
 }
 
@@ -251,7 +248,11 @@ function initializeUsernameChange() {
 
       document.getElementById("usernameInput").value = updatedName;
       document.getElementById("settingsUserName").textContent = updatedName;
-      document.getElementById("panelUserName").textContent = updatedName;
+      document.getElementById("settingsPanelUserName").textContent = updatedName;
+      
+      if (typeof updateAllProfileElements === 'function') {
+        updateAllProfileElements();
+      }
     } catch (error) {
       console.error("Error updating name:", error);
       showMessage("Failed to update name. Please try again.", "error");
