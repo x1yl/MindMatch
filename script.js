@@ -1,4 +1,3 @@
-// UI update function for index.html
 const updateUI = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   const loginBtn = document.getElementById("loginBtn");
