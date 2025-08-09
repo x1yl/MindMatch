@@ -16,23 +16,27 @@ class AITherapist {
         role: "system",
         content: `You are a compassionate, professional AI therapist. Your role is to:
 
-1. Provide emotional support and active listening
-2. Use evidence-based therapeutic techniques (CBT, mindfulness, etc.)
-3. Help users process their emotions and thoughts
-4. Suggest healthy coping strategies
-5. Be empathetic and non-judgmental
-6. Maintain appropriate boundaries
+      1. Provide emotional support and active listening
+      2. Use evidence-based therapeutic techniques (CBT, mindfulness, etc.)
+      3. Help users process their emotions and thoughts
+      4. Suggest healthy coping strategies
+      5. Be empathetic and non-judgmental
+      6. Maintain appropriate boundaries
 
-Guidelines:
-- Always prioritize user safety and well-being
-- If someone mentions self-harm or crisis, encourage them to seek immediate professional help
-- Keep responses conversational but professional
-- Ask thoughtful follow-up questions
-- Validate emotions while gently challenging negative thought patterns
-- Suggest practical exercises or techniques when appropriate
-- Remember this is a supportive conversation, not a diagnosis
+      Scope Restriction:
+      - Only respond to requests directly related to improving mental health, emotional well-being, or coping with psychological challenges.
+      - Politely decline requests unrelated to mental health, such as academic tasks, math equations, or other non-therapeutic queries. For example, respond with: "I'm here to support your mental health and emotional well-being. For topics like math or other non-mental health questions, I recommend exploring other resources. How can I assist you with your feelings or challenges today?"
 
-Be warm, understanding, and genuinely helpful. Respond in a natural, conversational way while maintaining your therapeutic approach.`,
+      Guidelines:
+      - Always prioritize user safety and well-being
+      - If someone mentions self-harm or crisis, encourage them to seek immediate professional help (e.g., contact a hotline or therapist)
+      - Keep responses conversational but professional
+      - Ask thoughtful follow-up questions
+      - Validate emotions while gently challenging negative thought patterns
+      - Suggest practical exercises or techniques when appropriate
+      - Remember this is a supportive conversation, not a diagnosis
+
+      Be warm, understanding, and genuinely helpful. Respond in a natural, conversational way while maintaining your therapeutic approach.`,
       },
     ];
 
@@ -245,69 +249,9 @@ Be warm, understanding, and genuinely helpful. Respond in a natural, conversatio
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
-  const checkAuthAndLoad = async () => {
-    try {
-      if (typeof auth0Client !== "undefined" && auth0Client) {
-        const isAuthenticated = await auth0Client.isAuthenticated();
-        if (isAuthenticated) {
-          window.aiTherapist = new AITherapist();
-        } else {
-          window.location.href = "./index.html";
-        }
-      } else {
-        setTimeout(checkAuthAndLoad, 500);
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-    }
+  const onAuthenticated = async () => {
+    window.aiTherapist = new AITherapist();
   };
 
-  checkAuthAndLoad();
-
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", function () {
-      if (typeof logout === "function") {
-        logout();
-      }
-    });
-  }
-
-  const themeButton = document.querySelector(".theme-button > button");
-  const themeDropdown = document.querySelector(".theme-dropdown");
-  const themeOptions = themeDropdown.querySelectorAll("button");
-
-  themeButton.addEventListener("click", function () {
-    themeDropdown.classList.toggle("open");
-  });
-
-  themeOptions.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const theme = btn.textContent.trim().toLowerCase();
-      if (theme === "light") {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      } else if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        localStorage.removeItem("theme");
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      }
-      themeDropdown.classList.remove("open");
-    });
-  });
-
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.documentElement.classList.remove("dark");
-  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    document.documentElement.classList.add("dark");
-  }
+  await checkAuthAndRedirect(onAuthenticated);
 });

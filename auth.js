@@ -34,30 +34,8 @@ const initAuth0 = async () => {
     }
   }
 
-  await updateUI();
-};
-
-const updateUI = async () => {
-  const isAuthenticated = await auth0Client.isAuthenticated();
-  const loginBtn = document.getElementById("loginBtn");
-  const dashboardBtn = document.getElementById("dashboardBtn");
-  const loginLink = document.getElementById("loginLink");
-  const userInfo = document.getElementById("userInfo");
-  const userName = document.getElementById("userName");
-
-  if (isAuthenticated) {
-    const user = await auth0Client.getUser();
-
-    loginBtn.classList.add("hidden");
-    loginLink.classList.add("hidden");
-    dashboardBtn.classList.remove("hidden");
-    userInfo.classList.remove("hidden");
-    userName.textContent = user.name || user.email;
-  } else {
-    loginBtn.classList.remove("hidden");
-    loginLink.classList.remove("hidden");
-    dashboardBtn.classList.add("hidden");
-    userInfo.classList.add("hidden");
+  if (typeof updateUI === 'function') {
+    await updateUI();
   }
 };
 
@@ -95,6 +73,23 @@ const getUser = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   if (isAuthenticated) {
     return await auth0Client.getUser();
+  }
+  return null;
+};
+
+const getFreshUser = async () => {
+  const isAuthenticated = await auth0Client.isAuthenticated();
+  if (isAuthenticated) {
+    try {
+      await auth0Client.getTokenSilently({
+        ignoreCache: true,
+        timeoutInSeconds: 30
+      });
+      return await auth0Client.getUser();
+    } catch (error) {
+      console.error("Error getting fresh user data:", error);
+      return await auth0Client.getUser();
+    }
   }
   return null;
 };
@@ -142,6 +137,96 @@ const isUserAuthenticated = async (retries = 3) => {
     }
   }
   return false;
+};
+
+const checkAuthAndRedirect = async (onAuthenticatedCallback, redirectPath = "/", maxRetries = 10) => {
+  const attemptAuth = async (retryCount = 0) => {
+    try {
+      if (typeof auth0Client !== "undefined" && auth0Client) {
+        const isAuthenticated = await auth0Client.isAuthenticated();
+        if (isAuthenticated) {
+          if (typeof onAuthenticatedCallback === 'function') {
+            await onAuthenticatedCallback();
+          }
+          initLogoutHandler();
+          initSidebarHandler();
+        } else {
+          window.location.href = redirectPath;
+        }
+      } else {
+        if (retryCount < maxRetries) {
+          setTimeout(() => attemptAuth(retryCount + 1), 500);
+        } else {
+          console.error("Auth0 client failed to initialize after maximum retries");
+          window.location.href = redirectPath;
+        }
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      if (retryCount < maxRetries) {
+        setTimeout(() => attemptAuth(retryCount + 1), 1000);
+      } else {
+        window.location.href = redirectPath;
+      }
+    }
+  };
+
+  return attemptAuth();
+};
+
+const initLogoutHandler = () => {
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      if (typeof logout === "function") {
+        logout();
+      }
+    });
+  }
+};
+
+const initSidebarHandler = () => {
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  const closeSidebar = document.getElementById("closeSidebar");
+
+  if (!hamburgerBtn || !sidebar) return;
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarOverlay?.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebarMenu() {
+    sidebar.classList.remove("open");
+    sidebarOverlay?.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  hamburgerBtn.addEventListener("click", function () {
+    if (sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    } else {
+      openSidebar();
+    }
+  });
+
+  closeSidebar?.addEventListener("click", closeSidebarMenu);
+  sidebarOverlay?.addEventListener("click", closeSidebarMenu);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    }
+  });
+
+  window.addEventListener("resize", function () {
+    if (window.innerWidth >= 1024 && sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    }
+  });
 };
 
 document.addEventListener("DOMContentLoaded", initAuth0);

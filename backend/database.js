@@ -308,6 +308,19 @@ async function deleteJournalEntry(userId, entryId) {
   }
 }
 
+async function deleteUser(userId) {
+  try {
+    const [result] = await pool.execute(
+      "DELETE FROM users WHERE id = ?",
+      [userId]
+    );
+    return result;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   pool,
   initializeDatabase,
@@ -323,4 +336,5 @@ module.exports = {
   getJournalEntriesByUser,
   getJournalEntryById,
   deleteJournalEntry,
+  deleteUser,
 };

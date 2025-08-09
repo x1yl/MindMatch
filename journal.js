@@ -1,6 +1,7 @@
 class Journal {
   constructor() {
     this.textarea = document.getElementById("journalTextarea");
+    this.linesContainer = document.getElementById("journalLines");
     this.dock = document.getElementById("journalDock");
     this.dockHoverArea = document.getElementById("dockHoverArea");
     this.wordCountEl = document.getElementById("wordCount");
@@ -23,11 +24,57 @@ class Journal {
         : location.origin;
 
     this.initializeEventListeners();
+    this.initializeLines();
     this.loadCurrentEntry();
     this.updateDate();
     this.updateWordCount();
     this.setupBeforeUnload();
     this.setupOnlineOfflineHandlers();
+  }
+
+  initializeLines() {
+    this.updateLines();
+
+    this.textarea.addEventListener("scroll", () => {
+      this.updateLines();
+    });
+
+    window.addEventListener("resize", () => {
+      this.updateLines();
+    });
+
+    this.textarea.addEventListener("input", () => {
+      setTimeout(() => this.updateLines(), 0);
+    });
+  }
+
+  updateLines() {
+    this.linesContainer.innerHTML = "";
+
+    const textareaRect = this.textarea.getBoundingClientRect();
+    const containerRect = this.linesContainer.getBoundingClientRect();
+
+    const scrollTop = this.textarea.scrollTop;
+    const lineHeight = parseFloat(getComputedStyle(this.textarea).lineHeight);
+    const paddingTop = parseFloat(getComputedStyle(this.textarea).paddingTop);
+
+    const firstLineTop = paddingTop - scrollTop;
+
+    const visibleHeight = containerRect.height;
+    const totalLines =
+      Math.ceil((visibleHeight + scrollTop + paddingTop) / lineHeight) + 5;
+
+    for (let i = 0; i < totalLines; i++) {
+      const line = document.createElement("div");
+      line.className = "journal-line";
+
+      const lineTop = firstLineTop + i * lineHeight;
+      line.style.top = `${lineTop}px`;
+
+      if (lineTop > -lineHeight && lineTop < visibleHeight + lineHeight) {
+        this.linesContainer.appendChild(line);
+      }
+    }
   }
 
   initializeEventListeners() {
@@ -763,69 +810,9 @@ class Journal {
 let journal;
 
 document.addEventListener("DOMContentLoaded", async function () {
-  const checkAuthAndLoad = async () => {
-    try {
-      if (typeof auth0Client !== "undefined" && auth0Client) {
-        const isAuthenticated = await auth0Client.isAuthenticated();
-        if (isAuthenticated) {
-          journal = new Journal();
-        } else {
-          window.location.href = "./index.html";
-        }
-      } else {
-        setTimeout(checkAuthAndLoad, 500);
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-    }
+  const onAuthenticated = async () => {
+    journal = new Journal();
   };
 
-  checkAuthAndLoad();
-
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", function () {
-      if (typeof logout === "function") {
-        logout();
-      }
-    });
-  }
-
-  const themeButton = document.querySelector(".theme-button > button");
-  const themeDropdown = document.querySelector(".theme-dropdown");
-  const themeOptions = themeDropdown.querySelectorAll("button");
-
-  themeButton.addEventListener("click", function () {
-    themeDropdown.classList.toggle("open");
-  });
-
-  themeOptions.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const theme = btn.textContent.trim().toLowerCase();
-      if (theme === "light") {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      } else if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        localStorage.removeItem("theme");
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      }
-      themeDropdown.classList.remove("open");
-    });
-  });
-
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.documentElement.classList.remove("dark");
-  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    document.documentElement.classList.add("dark");
-  }
+  await checkAuthAndRedirect(onAuthenticated);
 });

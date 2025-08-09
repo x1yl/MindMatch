@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coping Tools - MindMatch</title>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script
+      src="https://kit.fontawesome.com/480c99c053.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="output.css" />
+    <link rel="stylesheet" href="theme-dropdown.css" />
+    <link rel="stylesheet" href="profile-dropdown.css" />
+    <link rel="stylesheet" href="sidebar.css" />
+    <link rel="stylesheet" href="coping-tools.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+
+  <body
+    class="bg-light-2 dark:bg-light-2-dark text-dark-1 dark:text-dark-1-dark font-sans"
+  >
+    <div
+      id="sidebarOverlay"
+      class="sidebar-overlay fixed inset-0 bg-black z-40"
+    ></div>
+
+    <div
+      id="sidebar"
+      class="sidebar fixed top-0 left-0 h-full w-80 bg-light-1 dark:bg-light-1-dark border-r border-dark-3 dark:border-dark-3-dark z-50 shadow-xl"
+    >
+      <div class="sidebar-header p-6">
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-brain text-white text-sm"></i>
+            </div>
+            <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h2>
+          </div>
+          <button
+            id="closeSidebar"
+            class="sidebar-close-btn w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times text-dark-1 dark:text-dark-1-dark"></i>
+          </button>
+        </div>
+      </div>
+
+      <nav class="px-0">
+        <a href="./dashboard.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <span class="sidebar-nav-text">Dashboard</span>
+        </a>
+        <a href="./mood-tracker.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <span class="sidebar-nav-text">Mood Tracker</span>
+        </a>
+        <a href="./coping-tools.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-toolbox"></i>
+          </div>
+          <span class="sidebar-nav-text">Coping Tools</span>
+        </a>
+        <a href="./journal.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <span class="sidebar-nav-text">My Journal</span>
+        </a>
+        <a href="./ai-therapist.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <span class="sidebar-nav-text">AI Therapist</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50 theme-button">
+      <button
+        class="bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        <i class="fas fa-sun text-dark-1 dark:text-dark-1-dark"></i>
+      </button>
+      <div
+        class="theme-dropdown absolute bottom-full right-0 mb-2 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[120px] overflow-hidden"
+      >
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-sun w-4 h-4"></i>
+          Light
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-moon w-4 h-4"></i>
+          Dark
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-desktop w-4 h-4"></i>
+          System
+        </button>
+      </div>
+    </div>
+
+    <nav
+      class="bg-light-1 dark:bg-light-1-dark border-b border-dark-3 dark:border-dark-3-dark"
+    >
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <button
+            id="hamburgerBtn"
+            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+          >
+            <i
+              class="fas fa-bars text-dark-1 dark:text-dark-1-dark text-lg"
+            ></i>
+          </button>
+
+          <div class="absolute left-1/2 transform -translate-x-1/2">
+            <h1 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Coping Tools
+            </h1>
+          </div>
+
+          <div class="flex items-center gap-3 relative profile-container">
+            <div
+              class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
+            >
+              <div
+                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
+              >
+                <i class="fas fa-user text-light-1 text-sm"></i>
+              </div>
+              <span
+                id="dashboardUserName"
+                class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
+                >ADMIN</span
+              >
+              <i
+                class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
+              ></i>
+            </div>
+
+            <div
+              class="profile-dropdown absolute top-full right-0 mt-4 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[160px] overflow-hidden z-50"
+            >
+              <div
+                class="px-4 py-3 border-b border-dark-3 dark:border-dark-3-dark"
+              >
+                <p
+                  class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
+                  id="panelUserName"
+                >
+                  ADMIN
+                </p>
+                <p
+                  class="text-xs text-dark-2 dark:text-dark-2-dark"
+                  id="dashboardUserEmail"
+                >
+                  admin@mindmatch.xyz
+                </p>
+              </div>
+              <a
+                href="./settings.html"
+                class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-3"
+              >
+                <i
+                  class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark"
+                ></i>
+                Settings
+              </a>
+              <button
+                id="logoutBtn"
+                class="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3"
+              >
+                <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-dark-1 dark:text-dark-1-dark mb-4">
+          Coping Resources & Tools
+        </h2>
+        <p class="text-lg text-dark-2 dark:text-dark-2-dark max-w-2xl mx-auto">
+          Discover helpful resources, professional guidance, and proven
+          techniques to manage stress, anxiety, and life's challenges.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <button
+          class="quick-action-card bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 border border-blue-200 dark:border-blue-700 rounded-xl p-6 text-left hover:shadow-lg transition-all duration-300"
+          onclick="scrollToSection('breathing')"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-wind text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-blue-800 dark:text-blue-200">
+                Breathing Exercises
+              </h3>
+              <p class="text-sm text-blue-600 dark:text-blue-300">
+                Quick relief for anxiety
+              </p>
+            </div>
+          </div>
+        </button>
+
+        <button
+          class="quick-action-card bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 border border-green-200 dark:border-green-700 rounded-xl p-6 text-left hover:shadow-lg transition-all duration-300"
+          onclick="scrollToSection('therapy')"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-comments text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-green-800 dark:text-green-200">
+                Professional Help
+              </h3>
+              <p class="text-sm text-green-600 dark:text-green-300">
+                Find therapists & counselors
+              </p>
+            </div>
+          </div>
+        </button>
+
+        <button
+          class="quick-action-card bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 border border-purple-200 dark:border-purple-700 rounded-xl p-6 text-left hover:shadow-lg transition-all duration-300"
+          onclick="scrollToSection('mindfulness')"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-spa text-white text-xl"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-purple-800 dark:text-purple-200">
+                Mindfulness
+              </h3>
+              <p class="text-sm text-purple-600 dark:text-purple-300">
+                Meditation & grounding
+              </p>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <section id="breathing" class="mb-12">
+        <div
+          class="bg-light-1 dark:bg-light-1-dark rounded-2xl p-8 shadow-lg border border-dark-3 dark:border-dark-3-dark"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-wind text-white"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Breathing Exercises
+            </h3>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-light-2 dark:bg-light-2-dark rounded-lg p-6">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark mb-3">
+                4-7-8 Technique
+              </h4>
+              <p class="text-dark-2 dark:text-dark-2-dark mb-4">
+                A powerful technique to reduce anxiety and promote calm.
+              </p>
+              <ol
+                class="text-sm text-dark-2 dark:text-dark-2-dark space-y-1 mb-4"
+              >
+                <li>1. Inhale for 4 counts</li>
+                <li>2. Hold for 7 counts</li>
+                <li>3. Exhale for 8 counts</li>
+                <li>4. Repeat 3-4 times</li>
+              </ol>
+              <a
+                href="https://www.healthline.com/health/4-7-8-breathing"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 text-primary hover:text-primary-dark transition-colors"
+              >
+                <span>Learn more</span>
+                <i class="fas fa-external-link-alt text-xs"></i>
+              </a>
+            </div>
+
+            <div class="bg-light-2 dark:bg-light-2-dark rounded-lg p-6">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark mb-3">
+                Box Breathing
+              </h4>
+              <p class="text-dark-2 dark:text-dark-2-dark mb-4">
+                Used by Navy SEALs to stay calm under pressure.
+              </p>
+              <ol
+                class="text-sm text-dark-2 dark:text-dark-2-dark space-y-1 mb-4"
+              >
+                <li>1. Inhale for 4 counts</li>
+                <li>2. Hold for 4 counts</li>
+                <li>3. Exhale for 4 counts</li>
+                <li>4. Hold for 4 counts</li>
+              </ol>
+              <a
+                href="https://www.webmd.com/balance/what-is-box-breathing"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 text-primary hover:text-primary-dark transition-colors"
+              >
+                <span>Learn more</span>
+                <i class="fas fa-external-link-alt text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="therapy" class="mb-12">
+        <div
+          class="bg-light-1 dark:bg-light-1-dark rounded-2xl p-8 shadow-lg border border-dark-3 dark:border-dark-3-dark"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-comments text-white"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Professional Mental Health Services
+            </h3>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div class="space-y-4">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                Online Therapy Platforms
+              </h4>
+
+              <a
+                href="https://www.betterhelp.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block bg-light-2 dark:bg-light-2-dark rounded-lg p-4 hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors border border-transparent hover:border-primary"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                      BetterHelp
+                    </h5>
+                    <p class="text-sm text-dark-2 dark:text-dark-2-dark">
+                      World's largest therapy service
+                    </p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-primary"></i>
+                </div>
+              </a>
+
+              <a
+                href="https://www.talkspace.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block bg-light-2 dark:bg-light-2-dark rounded-lg p-4 hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors border border-transparent hover:border-primary"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                      Talkspace
+                    </h5>
+                    <p class="text-sm text-dark-2 dark:text-dark-2-dark">
+                      Text, audio, and video therapy
+                    </p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-primary"></i>
+                </div>
+              </a>
+
+              <a
+                href="https://cerebral.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block bg-light-2 dark:bg-light-2-dark rounded-lg p-4 hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors border border-transparent hover:border-primary"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                      Cerebral
+                    </h5>
+                    <p class="text-sm text-dark-2 dark:text-dark-2-dark">
+                      Therapy + medication management
+                    </p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-primary"></i>
+                </div>
+              </a>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                Find Local Therapists
+              </h4>
+
+              <a
+                href="https://www.psychologytoday.com/us/therapists"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block bg-light-2 dark:bg-light-2-dark rounded-lg p-4 hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors border border-transparent hover:border-primary"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                      Psychology Today
+                    </h5>
+                    <p class="text-sm text-dark-2 dark:text-dark-2-dark">
+                      Find therapists near you
+                    </p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-primary"></i>
+                </div>
+              </a>
+
+              <a
+                href="https://openpathcollective.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block bg-light-2 dark:bg-light-2-dark rounded-lg p-4 hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors border border-transparent hover:border-primary"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                      Open Path Collective
+                    </h5>
+                    <p class="text-sm text-dark-2 dark:text-dark-2-dark">
+                      Affordable therapy
+                    </p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-primary"></i>
+                </div>
+              </a>
+
+              <a
+                href="https://www.nami.org/help"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block bg-light-2 dark:bg-light-2-dark rounded-lg p-4 hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors border border-transparent hover:border-primary"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                      NAMI HelpLine
+                    </h5>
+                    <p class="text-sm text-dark-2 dark:text-dark-2-dark">
+                      Mental health resources & support
+                    </p>
+                  </div>
+                  <i class="fas fa-external-link-alt text-primary"></i>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-light-2 dark:bg-light-2-dark rounded-lg p-4">
+            <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark mb-2">
+              💡 Tips for Finding the Right Therapist
+            </h4>
+            <ul class="text-sm text-dark-2 dark:text-dark-2-dark space-y-1">
+              <li>• Look for licensed professionals (LCSW, LMFT, PhD, PsyD)</li>
+              <li>
+                • Consider your specific needs (anxiety, depression, trauma,
+                etc.)
+              </li>
+              <li>• Check if they accept your insurance</li>
+              <li>
+                • Many offer free consultations to see if you're a good fit
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="mindfulness" class="mb-12">
+        <div
+          class="bg-light-1 dark:bg-light-1-dark rounded-2xl p-8 shadow-lg border border-dark-3 dark:border-dark-3-dark"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-spa text-white"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Mindfulness & Grounding
+            </h3>
+          </div>
+
+          <div class="space-y-6">
+            <div class="expandable-section">
+              <button
+                class="expandable-header w-full bg-light-2 dark:bg-light-2-dark rounded-lg p-4 flex items-center justify-between hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+              >
+                <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                  5-4-3-2-1 Grounding Technique
+                </h4>
+                <i
+                  class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark transform transition-transform"
+                ></i>
+              </button>
+              <div
+                class="expandable-content hidden p-4 bg-light-2 dark:bg-light-2-dark rounded-b-lg"
+              >
+                <p class="text-dark-2 dark:text-dark-2-dark mb-3">
+                  Help bring yourself back to the present moment:
+                </p>
+                <ul
+                  class="text-sm text-dark-2 dark:text-dark-2-dark space-y-1 mb-4"
+                >
+                  <li>• 5 things you can see</li>
+                  <li>• 4 things you can touch</li>
+                  <li>• 3 things you can hear</li>
+                  <li>• 2 things you can smell</li>
+                  <li>• 1 thing you can taste</li>
+                </ul>
+                <a
+                  href="https://www.urmc.rochester.edu/behavioral-health-partners/bhp-blog/april-2018/5-4-3-2-1-coping-technique-for-anxiety"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 text-primary hover:text-primary-dark transition-colors"
+                >
+                  <span>Learn more grounding techniques</span>
+                  <i class="fas fa-external-link-alt text-xs"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4">
+              <a
+                href="https://www.headspace.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 border border-orange-200 dark:border-orange-700 rounded-lg p-4 hover:shadow-md transition-all"
+              >
+                <div class="flex items-center gap-3 mb-2">
+                  <i class="fas fa-brain text-orange-500 text-xl"></i>
+                  <h5
+                    class="font-semibold text-orange-800 dark:text-orange-200"
+                  >
+                    Headspace
+                  </h5>
+                </div>
+                <p class="text-sm text-orange-600 dark:text-orange-300">
+                  Guided meditation and mindfulness
+                </p>
+              </a>
+
+              <a
+                href="https://www.calm.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900 dark:to-teal-800 border border-teal-200 dark:border-teal-700 rounded-lg p-4 hover:shadow-md transition-all"
+              >
+                <div class="flex items-center gap-3 mb-2">
+                  <i class="fas fa-leaf text-teal-500 text-xl"></i>
+                  <h5 class="font-semibold text-teal-800 dark:text-teal-200">
+                    Calm
+                  </h5>
+                </div>
+                <p class="text-sm text-teal-600 dark:text-teal-300">
+                  Sleep stories and relaxation
+                </p>
+              </a>
+
+              <a
+                href="https://insighttimer.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 border border-indigo-200 dark:border-indigo-700 rounded-lg p-4 hover:shadow-md transition-all"
+              >
+                <div class="flex items-center gap-3 mb-2">
+                  <i class="fas fa-clock text-indigo-500 text-xl"></i>
+                  <h5
+                    class="font-semibold text-indigo-800 dark:text-indigo-200"
+                  >
+                    Insight Timer
+                  </h5>
+                </div>
+                <p class="text-sm text-indigo-600 dark:text-indigo-300">
+                  Free meditation library
+                </p>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-12">
+        <div
+          class="bg-light-1 dark:bg-light-1-dark rounded-2xl p-8 shadow-lg border border-dark-3 dark:border-dark-3-dark"
+        >
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-graduation-cap text-white"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Educational Resources
+            </h3>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="space-y-4">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                Understanding Mental Health
+              </h4>
+              <div class="space-y-3">
+                <a
+                  href="https://www.mayoclinic.org/diseases-conditions/anxiety/symptoms-causes/syc-20350961"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-link text-xs"></i>
+                    <span>Mayo Clinic: Understanding Anxiety</span>
+                  </div>
+                </a>
+                <a
+                  href="https://www.helpguide.org/articles/depression/depression-signs-and-symptoms.htm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-link text-xs"></i>
+                    <span>HelpGuide: Understanding Depression</span>
+                  </div>
+                </a>
+                <a
+                  href="https://www.apa.org/topics/stress"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-link text-xs"></i>
+                    <span>APA: Managing Stress</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                Self-Help Techniques
+              </h4>
+              <div class="space-y-3">
+                <a
+                  href="https://www.verywellmind.com/cognitive-behavioral-therapy-techniques-4846575"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-link text-xs"></i>
+                    <span>CBT Techniques You Can Try</span>
+                  </div>
+                </a>
+                <a
+                  href="https://www.helpguide.org/articles/stress/stress-management.htm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-link text-xs"></i>
+                    <span>HelpGuide: Stress Management</span>
+                  </div>
+                </a>
+                <a
+                  href="https://www.mindful.org/how-to-meditate/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-link text-xs"></i>
+                    <span>Mindful: How to Meditate</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <h4 class="font-semibold text-dark-1 dark:text-dark-1-dark">
+                Books & Podcasts
+              </h4>
+              <div class="space-y-3">
+                <a
+                  href="https://www.goodreads.com/book/show/36556202-maybe-you-should-talk-to-someone"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-book text-xs"></i>
+                    <span>"Maybe You Should Talk to Someone"</span>
+                  </div>
+                </a>
+                <a
+                  href="https://open.spotify.com/show/4uFQZaj5hgCM7Hce7jyWzh?si=84af5ea8ab624073"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-podcast text-xs"></i>
+                    <span>Psychology of Depression and Anxiety</span>
+                  </div>
+                </a>
+                <a
+                  href="https://open.spotify.com/show/75CmgtARvnuSoJjAjVCeqD?si=233fda3439e84789"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block text-primary hover:text-primary-dark transition-colors"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-podcast text-xs"></i>
+                    <span>Regulate & Rewire</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-8">
+        <div
+          class="bg-gradient-to-br from-red-50 to-red-100 dark:from-gray-800 dark:to-gray-700 border-2 border-red-300 dark:border-gray-600 rounded-2xl p-8 shadow-lg"
+        >
+          <div class="flex items-center gap-4 mb-6">
+            <div
+              class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-red-800 dark:text-gray-100">
+              Crisis & Emergency Resources
+            </h3>
+          </div>
+
+          <div
+            class="bg-red-100 dark:bg-gray-700 border border-red-300 dark:border-gray-500 rounded-xl p-4 mb-6"
+          >
+            <p class="text-red-800 dark:text-gray-100 font-medium text-center">
+              <strong
+                >⚠️ If you're in immediate danger or having thoughts of
+                self-harm, please reach out immediately.</strong
+              >
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              class="bg-white dark:bg-gray-800 border border-red-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <div
+                  class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-phone text-white text-sm"></i>
+                </div>
+                <h4 class="font-semibold text-red-800 dark:text-gray-100">
+                  Immediate Crisis
+                </h4>
+              </div>
+              <p class="text-sm text-red-700 dark:text-gray-300 mb-3">
+                If you're in immediate danger:
+              </p>
+              <div
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-center"
+              >
+                <i class="fas fa-phone mr-2"></i>
+                <span>Call 911</span>
+              </div>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 border border-red-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <div
+                  class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-comments text-white text-sm"></i>
+                </div>
+                <h4 class="font-semibold text-red-800 dark:text-gray-100">
+                  Suicide & Crisis Lifeline
+                </h4>
+              </div>
+              <p class="text-sm text-red-700 dark:text-gray-300 mb-3">
+                24/7 emotional support:
+              </p>
+              <div
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-center"
+              >
+                <i class="fas fa-phone mr-2"></i>
+                <span>Call or Text 988</span>
+              </div>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 border border-red-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <div
+                  class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-sms text-white text-sm"></i>
+                </div>
+                <h4 class="font-semibold text-red-800 dark:text-gray-100">
+                  Crisis Text Line
+                </h4>
+              </div>
+              <p class="text-sm text-red-700 dark:text-gray-300 mb-3">
+                Text with a crisis counselor:
+              </p>
+              <div
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-center"
+              >
+                <i class="fas fa-sms mr-2"></i>
+                <span>Text HOME to 741741</span>
+              </div>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 border border-red-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <div
+                  class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-heart text-white text-sm"></i>
+                </div>
+                <h4 class="font-semibold text-red-800 dark:text-gray-100">
+                  LGBTQ+ Support
+                </h4>
+              </div>
+              <p class="text-sm text-red-700 dark:text-gray-300 mb-3">
+                Trevor Project Lifeline:
+              </p>
+              <div
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-center"
+              >
+                <i class="fas fa-phone mr-2"></i>
+                <span>1-866-488-7386</span>
+              </div>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 border border-red-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <div
+                  class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-hospital text-white text-sm"></i>
+                </div>
+                <h4 class="font-semibold text-red-800 dark:text-gray-100">
+                  SAMHSA Helpline
+                </h4>
+              </div>
+              <p class="text-sm text-red-700 dark:text-gray-300 mb-3">
+                Mental health & substance abuse:
+              </p>
+              <div
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-center"
+              >
+                <i class="fas fa-phone mr-2"></i>
+                <span>1-800-662-HELP (4357)</span>
+              </div>
+            </div>
+
+            <div
+              class="bg-white dark:bg-gray-800 border border-red-200 dark:border-gray-600 rounded-lg p-4 shadow-sm"
+            >
+              <div class="flex items-center gap-3 mb-3">
+                <div
+                  class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-laptop text-white text-sm"></i>
+                </div>
+                <h4 class="font-semibold text-red-800 dark:text-gray-100">
+                  Online Chat
+                </h4>
+              </div>
+              <p class="text-sm text-red-700 dark:text-gray-300 mb-3">
+                Crisis chat support:
+              </p>
+              <div
+                class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold text-center"
+              >
+                <i class="fas fa-laptop mr-2"></i>
+                <a href="https://suicidepreventionlifeline.org"
+                  >suicidepreventionlifeline.org</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-6 p-4 bg-red-100 dark:bg-gray-700 border border-red-300 dark:border-gray-500 rounded-lg"
+          >
+            <p class="text-sm text-red-800 dark:text-gray-100 text-center">
+              <strong>Remember:</strong> You are not alone. These feelings are
+              temporary, and help is available. If you're having thoughts of
+              self-harm, please reach out immediately. Your life has value and
+              meaning.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/auth.js"></script>
+    <script src="/theme.js"></script>
+    <script src="/coping-tools.js"></script>
+  </body>
+</html>

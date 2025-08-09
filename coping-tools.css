@@ -1,0 +1,126 @@
+.quick-action-card,
+.expandable-header,
+.expandable-section {
+  transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.dark .quick-action-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.expandable-content {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.expandable-section.expanded .expandable-header {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+a[target="_blank"]:hover {
+  transform: translateX(2px);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.emergency-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Theme dropdown styles moved to component file */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.resource-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.emergency-card {
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(254, 242, 242, 0.9),
+    rgba(254, 226, 226, 0.9)
+  );
+}
+
+.dark .emergency-card {
+  background: linear-gradient(
+    135deg,
+    rgba(64, 64, 64, 0.8),
+    rgba(48, 48, 48, 0.8)
+  );
+  border-color: rgba(156, 163, 175, 0.4);
+}
+
+.emergency-resource-card {
+  transition: all 0.2s ease;
+}
+
+.emergency-resource-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.dark .emergency-resource-card:hover {
+  box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
+}
+
+.emergency-btn {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transition: all 0.2s ease;
+}
+
+.emergency-btn:hover {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(185, 28, 28, 0.3);
+}
+
+@media (max-width: 768px) {
+  .quick-action-card {
+    padding: 1rem;
+  }
+
+  .expandable-header {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .quick-action-card,
+  .expandable-header {
+    border-width: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-action-card,
+  .expandable-header,
+  .expandable-content {
+    transition: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
