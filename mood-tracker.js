@@ -1060,77 +1060,18 @@ document.getElementById("monthView").addEventListener("click", function () {
 });
 
 document.addEventListener("DOMContentLoaded", async function () {
-  const checkAuthAndLoad = async () => {
-    try {
-      if (typeof auth0Client !== "undefined" && auth0Client) {
-        const isAuthenticated = await auth0Client.isAuthenticated();
-        if (isAuthenticated) {
-          await loadMoodData();
-          updateMoodInsights();
-          updateMoodChart();
-          updateMoodInterface();
-        } else {
-          window.location.href = "./index.html";
-        }
-      } else {
-        setTimeout(checkAuthAndLoad, 500);
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-    }
+  const onAuthenticated = async () => {
+    await loadMoodData();
+    updateMoodInsights();
+    updateMoodChart();
+    updateMoodInterface();
   };
 
-  checkAuthAndLoad();
+  await checkAuthAndRedirect(onAuthenticated);
 
-  const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", function () {
-      if (typeof logout === "function") {
-        logout();
-      }
-    });
-  }
-
-  const themeButton = document.querySelector(".theme-button > button");
-  const themeDropdown = document.querySelector(".theme-dropdown");
-  const themeOptions = themeDropdown.querySelectorAll("button");
-
-  themeButton.addEventListener("click", function () {
-    themeDropdown.classList.toggle("open");
+  window.addEventListener('themeChanged', function() {
+    updateChartTheme();
   });
-
-  themeOptions.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const theme = btn.textContent.trim().toLowerCase();
-      if (theme === "light") {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      } else if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        localStorage.removeItem("theme");
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-      }
-
-      updateChartTheme();
-
-      themeDropdown.classList.remove("open");
-    });
-  });
-
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.documentElement.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.documentElement.classList.remove("dark");
-  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    document.documentElement.classList.add("dark");
-  }
 
   setTimeout(() => {
     updateChartTheme();

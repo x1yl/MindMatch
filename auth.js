@@ -34,30 +34,8 @@ const initAuth0 = async () => {
     }
   }
 
-  await updateUI();
-};
-
-const updateUI = async () => {
-  const isAuthenticated = await auth0Client.isAuthenticated();
-  const loginBtn = document.getElementById("loginBtn");
-  const dashboardBtn = document.getElementById("dashboardBtn");
-  const loginLink = document.getElementById("loginLink");
-  const userInfo = document.getElementById("userInfo");
-  const userName = document.getElementById("userName");
-
-  if (isAuthenticated) {
-    const user = await auth0Client.getUser();
-
-    loginBtn.classList.add("hidden");
-    loginLink.classList.add("hidden");
-    dashboardBtn.classList.remove("hidden");
-    userInfo.classList.remove("hidden");
-    userName.textContent = user.name || user.email;
-  } else {
-    loginBtn.classList.remove("hidden");
-    loginLink.classList.remove("hidden");
-    dashboardBtn.classList.add("hidden");
-    userInfo.classList.add("hidden");
+  if (typeof updateUI === "function") {
+    await updateUI();
   }
 };
 
@@ -97,6 +75,51 @@ const getUser = async () => {
     return await auth0Client.getUser();
   }
   return null;
+};
+
+const getFreshUser = async () => {
+  const isAuthenticated = await auth0Client.isAuthenticated();
+  if (isAuthenticated) {
+    try {
+      await auth0Client.getTokenSilently({
+        ignoreCache: true,
+        timeoutInSeconds: 30,
+      });
+      return await auth0Client.getUser();
+    } catch (error) {
+      console.error("Error getting fresh user data:", error);
+      return await auth0Client.getUser();
+    }
+  }
+  return null;
+};
+
+const fetchFreshUserData = async () => {
+  try {
+    const API_BASE_URL =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+        ? "http://localhost:8081"
+        : location.origin;
+
+    const token = await getToken();
+    const response = await fetch(`${API_BASE_URL}/api/user-profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      return userData;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching fresh user data:", error);
+    return null;
+  }
 };
 
 const getToken = async () => {
@@ -142,6 +165,202 @@ const isUserAuthenticated = async (retries = 3) => {
     }
   }
   return false;
+};
+
+const checkAuthAndRedirect = async (
+  onAuthenticatedCallback,
+  redirectPath = "/",
+  maxRetries = 10
+) => {
+  const attemptAuth = async (retryCount = 0) => {
+    try {
+      if (typeof auth0Client !== "undefined" && auth0Client) {
+        const isAuthenticated = await auth0Client.isAuthenticated();
+        if (isAuthenticated) {
+          if (typeof onAuthenticatedCallback === "function") {
+            await onAuthenticatedCallback();
+          }
+          initLogoutHandler();
+          initSidebarHandler();
+          await updateAllProfileElements();
+          setActiveNavigation();
+        } else {
+          window.location.href = redirectPath;
+        }
+      } else {
+        if (retryCount < maxRetries) {
+          setTimeout(() => attemptAuth(retryCount + 1), 500);
+        } else {
+          console.error(
+            "Auth0 client failed to initialize after maximum retries"
+          );
+          window.location.href = redirectPath;
+        }
+      }
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      if (retryCount < maxRetries) {
+        setTimeout(() => attemptAuth(retryCount + 1), 1000);
+      } else {
+        window.location.href = redirectPath;
+      }
+    }
+  };
+
+  return attemptAuth();
+};
+
+const initLogoutHandler = () => {
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function () {
+      if (typeof logout === "function") {
+        logout();
+      }
+    });
+  }
+};
+
+const initSidebarHandler = () => {
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  const closeSidebar = document.getElementById("closeSidebar");
+
+  if (!hamburgerBtn || !sidebar) return;
+
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sidebarOverlay?.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebarMenu() {
+    sidebar.classList.remove("open");
+    sidebarOverlay?.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  hamburgerBtn.addEventListener("click", function () {
+    if (sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    } else {
+      openSidebar();
+    }
+  });
+
+  closeSidebar?.addEventListener("click", closeSidebarMenu);
+  sidebarOverlay?.addEventListener("click", closeSidebarMenu);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    }
+  });
+
+  window.addEventListener("resize", function () {
+    if (window.innerWidth >= 1024 && sidebar.classList.contains("open")) {
+      closeSidebarMenu();
+    }
+  });
+};
+
+const updateAllProfileElements = async () => {
+  try {
+    const freshUserData = await fetchFreshUserData();
+    const auth0User = await auth0Client.getUser();
+    const user = freshUserData || auth0User;
+
+    if (!user) return;
+
+    const profilePictures = document.querySelectorAll('[id$="ProfilePicture"]');
+    profilePictures.forEach((img) => {
+      const container = img.parentElement;
+      const fallbackIcon = img.nextElementSibling;
+
+      const isCustomAvatarType =
+        user.picture && user.picture.includes("mindmatch.app/avatars/");
+
+      if (user.picture && !isCustomAvatarType) {
+        img.src = user.picture;
+        img.style.display = "block";
+        if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+          fallbackIcon.style.display = "none";
+        }
+      } else if (isCustomAvatarType) {
+        const avatarType = user.picture.match(/avatars\/(.+)\.png$/)?.[1];
+
+        img.style.display = "none";
+
+        if (fallbackIcon) {
+          const avatarIcons = {
+            user: "fas fa-user",
+            smile: "fas fa-smile",
+            leaf: "fas fa-leaf",
+            heart: "fas fa-heart",
+            star: "fas fa-star",
+            sun: "fas fa-sun",
+          };
+
+          const avatarColors = {
+            user: "bg-primary",
+            smile: "bg-purple-500",
+            leaf: "bg-green-500",
+            heart: "bg-orange-500",
+            star: "bg-teal-500",
+            sun: "bg-indigo-500",
+          };
+
+          const iconClass = avatarIcons[avatarType] || "fas fa-user";
+          const colorClass = avatarColors[avatarType] || "bg-primary";
+
+          fallbackIcon.className = `${iconClass} text-light-1 text-sm`;
+          fallbackIcon.style.display = "block";
+
+          container.className =
+            container.className.replace(/bg-\w+-\d+/, "") + ` ${colorClass}`;
+        }
+      } else {
+        img.style.display = "none";
+        if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+          fallbackIcon.style.display = "block";
+          fallbackIcon.className = "fas fa-user text-light-1 text-sm";
+          container.className =
+            container.className.replace(/bg-\w+-\d+/, "") + " bg-primary";
+        }
+      }
+    });
+
+    const userNameElements = document.querySelectorAll('[id$="UserName"]');
+    userNameElements.forEach((element) => {
+      element.textContent = user.name || user.nickname || user.email || "User";
+    });
+
+    const userEmailElements = document.querySelectorAll('[id$="UserEmail"]');
+    userEmailElements.forEach((element) => {
+      element.textContent = user.email || "";
+    });
+  } catch (error) {
+    console.error("Error updating profile elements:", error);
+  }
+};
+
+const setActiveNavigation = () => {
+  const currentPage = window.location.pathname.split("/").pop();
+  const navItems = document.querySelectorAll(".sidebar-nav-item");
+
+  navItems.forEach((item) => {
+    const href = item.getAttribute("href");
+    if (href) {
+      const linkPage = href.split("/").pop();
+
+      if (linkPage === currentPage) {
+        item.classList.add("active");
+      } else {
+        item.classList.remove("active");
+      }
+    }
+  });
 };
 
 document.addEventListener("DOMContentLoaded", initAuth0);
