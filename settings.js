@@ -168,7 +168,7 @@ function setCurrentAvatar(pictureUrl, avatarType = null, options = {}) {
     };
 
     const avatarColors = {
-      user: "bg-blue-500",
+      user: "bg-primary",
       smile: "bg-purple-500",
       leaf: "bg-green-500",
       heart: "bg-orange-500",
