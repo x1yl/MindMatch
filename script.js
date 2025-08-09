@@ -14,7 +14,7 @@ const updateUI = async () => {
     dashboardBtn?.classList.remove("hidden");
     userInfo?.classList.remove("hidden");
     if (userName) {
-      userName.textContent = user.name || user.email;
+      userName.textContent = user.nickname || user.name || user.email || "User";
     }
   } else {
     loginBtn?.classList.remove("hidden");

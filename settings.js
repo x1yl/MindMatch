@@ -23,14 +23,14 @@ async function initializeSettings() {
     const freshUserData = await fetchFreshUserData();
     currentUser = freshUserData || user;
 
-    document.getElementById("usernameInput").value = currentUser.name || "";
+    document.getElementById("usernameInput").value = currentUser.nickname || "";
     document.getElementById("emailDisplay").value = currentUser.email || "";
     document.getElementById("settingsUserName").textContent =
-      currentUser.name || "User";
+      currentUser.nickname || "User";
     document.getElementById("settingsUserEmail").textContent =
       currentUser.email || "";
     document.getElementById("settingsPanelUserName").textContent =
-      currentUser.name || "User";
+      currentUser.nickname || "User";
 
     if (
       currentUser.picture &&
@@ -244,7 +244,7 @@ function initializeUsernameChange() {
       return;
     }
 
-    if (newUsername === currentUser.name) {
+    if (newUsername === currentUser.nickname) {
       showMessage("No changes to save.", "info");
       return;
     }
@@ -260,7 +260,7 @@ function initializeUsernameChange() {
         currentUser = freshUserData;
       }
 
-      const updatedName = freshUserData ? freshUserData.name : newUsername;
+      const updatedName = freshUserData ? freshUserData.nickname : newUsername;
 
       document.getElementById("usernameInput").value = updatedName;
       document.getElementById("settingsUserName").textContent = updatedName;
@@ -273,7 +273,7 @@ function initializeUsernameChange() {
     } catch (error) {
       console.error("Error updating name:", error);
       showMessage("Failed to update name. Please try again.", "error");
-      usernameInput.value = currentUser.name || "";
+      usernameInput.value = currentUser.nickname || "";
     } finally {
       saveBtn.classList.remove("loading");
       saveBtn.disabled = false;
@@ -288,7 +288,7 @@ function initializeUsernameChange() {
   });
 }
 
-async function updateUserName(name) {
+async function updateUserName(username) {
   try {
     const token = await getToken();
 
@@ -298,7 +298,7 @@ async function updateUserName(name) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ username }),
     });
 
     if (!response.ok) {
