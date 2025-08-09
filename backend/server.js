@@ -4,7 +4,8 @@ const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const jwtAuthz = require("express-jwt-authz");
+const axios = require("axios");
+const FormData = require("form-data");
 require("dotenv").config();
 
 const {
@@ -21,6 +22,7 @@ const {
   getJournalEntriesByUser,
   getJournalEntryById,
   deleteJournalEntry,
+  deleteUser,
 } = require("./database");
 
 app.use(
@@ -37,16 +39,17 @@ app.use(
       "file://"
     ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'FETCH', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     optionsSuccessStatus: 200
   })
 );
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(
   bodyParser.urlencoded({
     extended: true,
+    limit: '10mb',
   })
 );
 
@@ -63,6 +66,31 @@ const checkJwt = jwt({
   algorithms: ["RS256"],
 });
 
+let managementToken = null;
+let tokenExpiry = null;
+
+const getManagementToken = async () => {
+  if (managementToken && tokenExpiry && Date.now() < tokenExpiry) {
+    return managementToken;
+  }
+
+  try {
+    const response = await axios.post(`https://${process.env.AUTH0_DOMAIN}/oauth/token`, {
+      client_id: process.env.AUTH0_MANAGEMENT_CLIENT_ID,
+      client_secret: process.env.AUTH0_MANAGEMENT_CLIENT_SECRET,
+      audience: `https://${process.env.AUTH0_DOMAIN}/api/v2/`,
+      grant_type: 'client_credentials'
+    });
+
+    managementToken = response.data.access_token;
+    tokenExpiry = Date.now() + (response.data.expires_in - 60) * 1000;
+    return managementToken;
+  } catch (error) {
+    console.error('Error getting management token:', error);
+    throw new Error('Failed to get management token');
+  }
+};
+
 app.get("/health", async (req, res) => {
   const dbStatus = await testConnection();
   res.json({
@@ -70,6 +98,145 @@ app.get("/health", async (req, res) => {
     message: "MindMatch API is running",
     database: dbStatus ? "Connected" : "Disconnected",
   });
+});
+
+app.get("/api/user-profile", checkJwt, async (req, res) => {
+  try {
+    const userId = req.auth.sub;
+    const token = await getManagementToken();
+
+    const response = await axios.get(`https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    res.status(500).json({ error: 'Failed to get user profile' });
+  }
+});
+
+app.patch("/api/user-profile/name", checkJwt, async (req, res) => {
+  try {
+    const userId = req.auth.sub;
+    const { name } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    const token = await getManagementToken();
+
+    const response = await axios.patch(
+      `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`,
+      { name: name.trim() },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    res.json({ message: 'Name updated successfully', user: response.data });
+  } catch (error) {
+    console.error('Error updating user name:', error.message);
+    res.status(500).json({ error: 'Failed to update user name' });
+  }
+});
+
+app.post("/api/user-profile/picture", checkJwt, async (req, res) => {
+  try {
+    const userId = req.auth.sub;
+    const { imageData, fileName, avatarType, avatarUrl } = req.body;
+
+    let imageUrl;
+
+    if (avatarType && avatarUrl) {
+      imageUrl = avatarUrl;
+    } else if (imageData) {
+      const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+
+      const formData = new FormData();
+      formData.append('source', buffer, fileName || 'profile.jpg');
+
+      const uploadResponse = await axios.post(
+        `https://freeimage.host/api/1/upload?key=${process.env.FREE_IMAGE_HOST_API_KEY}`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        }
+      );
+
+      if (uploadResponse.data.status_code !== 200) {
+        throw new Error('Failed to upload image');
+      }
+
+      imageUrl = uploadResponse.data.image.url;
+    } else {
+      return res.status(400).json({ error: 'Image data or avatar type is required' });
+    }
+
+    const token = await getManagementToken();
+
+    const auth0Response = await axios.patch(
+      `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`,
+      { picture: imageUrl },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    res.json({ 
+      message: 'Picture updated successfully', 
+      picture: imageUrl, 
+      user: auth0Response.data 
+    });
+  } catch (error) {
+    console.error('Error updating user picture:', error.message);
+    res.status(500).json({ error: 'Failed to update user picture' });
+  }
+});
+
+app.delete("/api/user-profile", checkJwt, async (req, res) => {
+  try {
+    const userId = req.auth.sub;
+
+    const token = await getManagementToken();
+
+    await axios.delete(
+      `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    await deleteUser(userId);
+
+    res.json({ 
+      message: 'Account deleted successfully',
+      status: 'deleted'
+    });
+  } catch (error) {
+    console.error('Error deleting user account:', error.message);
+    if (error.response?.status === 404) {
+      res.status(404).json({ error: 'User not found' });
+    } else {
+      res.status(500).json({ error: 'Failed to delete account' });
+    }
+  }
 });
 
 app.get("/api/profile", checkJwt, async (req, res) => {

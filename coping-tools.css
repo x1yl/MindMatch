@@ -43,18 +43,7 @@ a[target="_blank"]:hover {
   animation: pulse 2s infinite;
 }
 
-.theme-dropdown {
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-}
-
-.theme-dropdown.open {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
+/* Theme dropdown styles moved to component file */
 
 html {
   scroll-behavior: smooth;
