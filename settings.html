@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Settings <a href="./settings.html" class="w-full px-4 py-2 text-left
+      text-dark-1 dark:text-dark-1-dark hover:bg-light-3
+      dark:hover:bg-light-3-dark transition-colors flex items-center gap-3" > <i
+      class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark" ></i>
+      Settings </a>ch
+    </title>
+    <link rel="stylesheet" href="output.css" />
+    <script
+      src="https://kit.fontawesome.com/480c99c053.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+
+  <body
+    class="bg-light-2 dark:bg-light-2-dark text-dark-1 dark:text-dark-1-dark font-sans"
+  >
+    <div
+      id="sidebarOverlay"
+      class="sidebar-overlay fixed inset-0 bg-black z-40"
+    ></div>
+
+    <div
+      id="sidebar"
+      class="sidebar fixed top-0 left-0 h-full w-80 bg-light-1 dark:bg-light-1-dark border-r border-dark-3 dark:border-dark-3-dark z-50 shadow-xl"
+    >
+      <div class="sidebar-header p-6">
+        <div class="flex items-center justify-between mb-8">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+            >
+              <i class="fas fa-brain text-white text-sm"></i>
+            </div>
+            <h2 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+              MindMatch
+            </h2>
+          </div>
+          <button
+            id="closeSidebar"
+            class="sidebar-close-btn w-8 h-8 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center justify-center"
+          >
+            <i class="fas fa-times text-dark-1 dark:text-dark-1-dark"></i>
+          </button>
+        </div>
+      </div>
+
+      <nav class="px-0">
+        <a href="./dashboard.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <span class="sidebar-nav-text">Dashboard</span>
+        </a>
+        <a href="./mood-tracker.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <span class="sidebar-nav-text">Mood Tracker</span>
+        </a>
+        <a href="./coping-tools.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-toolbox"></i>
+          </div>
+          <span class="sidebar-nav-text">Coping Tools</span>
+        </a>
+        <a href="./journal.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-book"></i>
+          </div>
+          <span class="sidebar-nav-text">My Journal</span>
+        </a>
+        <a href="./ai-therapist.html" class="sidebar-nav-item">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-robot"></i>
+          </div>
+          <span class="sidebar-nav-text">AI Therapist</span>
+        </a>
+        <a href="./settings.html" class="sidebar-nav-item active">
+          <div class="sidebar-nav-icon">
+            <i class="fas fa-cog"></i>
+          </div>
+          <span class="sidebar-nav-text">Settings</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50 theme-button">
+      <button
+        class="bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-full w-12 h-12 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        <i class="fas fa-sun text-dark-1 dark:text-dark-1-dark"></i>
+      </button>
+      <div
+        class="theme-dropdown absolute bottom-full right-0 mb-2 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[120px] overflow-hidden"
+      >
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-sun w-4 h-4"></i>
+          Light
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-moon w-4 h-4"></i>
+          Dark
+        </button>
+        <button
+          class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-2"
+        >
+          <i class="fas fa-desktop w-4 h-4"></i>
+          System
+        </button>
+      </div>
+    </div>
+
+    <nav
+      class="bg-light-1 dark:bg-light-1-dark border-b border-dark-3 dark:border-dark-3-dark"
+    >
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <button
+            id="hamburgerBtn"
+            class="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors"
+          >
+            <i
+              class="fas fa-bars text-dark-1 dark:text-dark-1-dark text-lg"
+            ></i>
+          </button>
+
+          <div class="absolute left-1/2 transform -translate-x-1/2">
+            <h1 class="text-2xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Settings
+            </h1>
+          </div>
+
+          <div class="flex items-center gap-3 relative profile-container">
+            <div
+              class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
+            >
+              <div
+                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
+                id="navbarAvatar"
+              >
+                <i class="fas fa-user text-light-1 text-sm"></i>
+              </div>
+              <span
+                id="settingsUserName"
+                class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
+                >ADMIN</span
+              >
+              <i
+                class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
+              ></i>
+            </div>
+
+            <div
+              class="profile-dropdown absolute top-full right-0 mt-4 bg-light-1 dark:bg-light-1-dark border border-dark-3 dark:border-dark-3-dark rounded-lg shadow-xl min-w-[160px] overflow-hidden z-50"
+            >
+              <div
+                class="px-4 py-3 border-b border-dark-3 dark:border-dark-3-dark"
+              >
+                <p
+                  class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
+                  id="panelUserName"
+                >
+                  ADMIN
+                </p>
+                <p
+                  class="text-xs text-dark-2 dark:text-dark-2-dark"
+                  id="settingsUserEmail"
+                >
+                  admin@mindmatch.xyz
+                </p>
+              </div>
+              <button
+                id="settingsBtn"
+                class="w-full px-4 py-2 text-left text-dark-1 dark:text-dark-1-dark hover:bg-light-3 dark:hover:bg-light-3-dark transition-colors flex items-center gap-3"
+              >
+                <i
+                  class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark"
+                ></i>
+                Settings
+              </button>
+              <button
+                id="logoutBtn"
+                class="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3"
+              >
+                <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+      <div
+        class="bg-light-1 dark:bg-light-1-dark rounded-xl shadow-lg mb-8 overflow-hidden"
+      >
+        <div class="bg-gradient-to-r from-primary to-primary-dark p-6">
+          <h2 class="text-2xl font-bold text-white mb-2">Profile Settings</h2>
+          <p class="text-white/80">Customize your MindMatch profile</p>
+        </div>
+
+        <div class="p-6">
+          <div class="mb-8">
+            <h3
+              class="text-lg font-semibold text-dark-1 dark:text-dark-1-dark mb-4"
+            >
+              Profile Picture
+            </h3>
+            <div class="flex items-center gap-6">
+              <div class="relative">
+                <div
+                  id="currentAvatar"
+                  class="w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-lg"
+                >
+                  <i class="fas fa-user text-white text-2xl"></i>
+                </div>
+                <button
+                  id="avatarChangeBtn"
+                  class="absolute -bottom-2 -right-2 w-8 h-8 bg-light-1 dark:bg-light-1-dark border-2 border-primary rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow"
+                >
+                  <i class="fas fa-camera text-primary text-sm"></i>
+                </button>
+              </div>
+
+              <div class="flex-1">
+                <p class="text-dark-2 dark:text-dark-2-dark mb-4">
+                  Choose from our selection of avatars or upload your own image.
+                </p>
+                <div class="grid grid-cols-6 gap-3 mb-4">
+                  <button
+                    class="avatar-option w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+                    data-avatar="user"
+                  >
+                    <i class="fas fa-user text-white"></i>
+                  </button>
+                  <button
+                    class="avatar-option w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+                    data-avatar="smile"
+                  >
+                    <i class="fas fa-smile text-white"></i>
+                  </button>
+                  <button
+                    class="avatar-option w-12 h-12 bg-green-500 rounded-full flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+                    data-avatar="leaf"
+                  >
+                    <i class="fas fa-leaf text-white"></i>
+                  </button>
+                  <button
+                    class="avatar-option w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+                    data-avatar="heart"
+                  >
+                    <i class="fas fa-heart text-white"></i>
+                  </button>
+                  <button
+                    class="avatar-option w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+                    data-avatar="star"
+                  >
+                    <i class="fas fa-star text-white"></i>
+                  </button>
+                  <button
+                    class="avatar-option w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center hover:ring-2 hover:ring-primary transition-all"
+                    data-avatar="sun"
+                  >
+                    <i class="fas fa-sun text-white"></i>
+                  </button>
+                </div>
+                <button
+                  id="uploadAvatarBtn"
+                  class="px-4 py-2 bg-light-3 dark:bg-light-3-dark text-dark-1 dark:text-dark-1-dark rounded-lg hover:bg-light-4 dark:hover:bg-light-2-dark transition-colors text-sm"
+                >
+                  <i class="fas fa-upload mr-2"></i>
+                  Upload Custom Image
+                </button>
+                <input
+                  type="file"
+                  id="avatarUpload"
+                  accept="image/*"
+                  class="hidden"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h3
+              class="text-lg font-semibold text-dark-1 dark:text-dark-1-dark mb-4"
+            >
+              Username
+            </h3>
+            <div class="flex items-start gap-4">
+              <div class="flex-1">
+                <input
+                  type="text"
+                  id="usernameInput"
+                  value="ADMIN"
+                  class="w-full px-4 py-3 bg-light-3 dark:bg-light-3-dark border border-dark-3 dark:border-dark-3-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-dark-1 dark:text-dark-1-dark"
+                  placeholder="Enter your username"
+                />
+                <p class="text-sm text-dark-2 dark:text-dark-2-dark mt-2">
+                  This name will be displayed throughout the app.
+                </p>
+              </div>
+              <button
+                id="saveUsernameBtn"
+                class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors font-medium"
+              >
+                <i class="fas fa-save mr-2"></i>
+                Save
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h3
+              class="text-lg font-semibold text-dark-1 dark:text-dark-1-dark mb-4"
+            >
+              Email Address
+            </h3>
+            <div class="flex items-center gap-4">
+              <input
+                type="email"
+                id="emailDisplay"
+                value="admin@mindmatch.xyz"
+                readonly
+                class="flex-1 px-4 py-3 bg-light-4 dark:bg-light-2-dark border border-dark-3 dark:border-dark-3-dark rounded-lg text-dark-2 dark:text-dark-2-dark cursor-not-allowed"
+              />
+              <div class="text-sm text-dark-2 dark:text-dark-2-dark">
+                <i class="fas fa-lock mr-1"></i>
+                Read only
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="bg-light-1 dark:bg-light-1-dark rounded-xl shadow-lg overflow-hidden"
+      >
+        <div class="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-6">
+          <h2 class="text-2xl font-bold text-red-600 mb-2">Danger Zone</h2>
+          <p class="text-red-600/80">Permanent actions that cannot be undone</p>
+        </div>
+
+        <div class="p-6">
+          <div
+            class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-6"
+          >
+            <div class="flex items-start gap-4">
+              <div
+                class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0"
+              >
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-red-600 mb-2">
+                  Delete Account
+                </h3>
+                <p class="text-red-600/80 mb-4">
+                  Once you delete your account, all of your data will be
+                  permanently removed. This includes your mood tracking history,
+                  journal entries, and all personal information. This action
+                  cannot be undone.
+                </p>
+                <ul
+                  class="list-disc list-inside text-sm text-red-600/80 mb-6 space-y-1"
+                >
+                  <li>All mood tracking data will be lost</li>
+                  <li>Journal entries will be permanently deleted</li>
+                  <li>Account settings and preferences will be removed</li>
+                  <li>
+                    You will need to create a new account to use MindMatch again
+                  </li>
+                </ul>
+                <button
+                  id="deleteAccountBtn"
+                  class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+                >
+                  <i class="fas fa-trash mr-2"></i>
+                  Delete My Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div
+      id="deleteModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center hidden"
+    >
+      <div
+        class="bg-light-1 dark:bg-light-1-dark rounded-xl shadow-2xl max-w-md w-full mx-4"
+      >
+        <div class="p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center"
+            >
+              <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark-1 dark:text-dark-1-dark">
+              Confirm Account Deletion
+            </h3>
+          </div>
+
+          <p class="text-dark-2 dark:text-dark-2-dark mb-6">
+            Are you absolutely sure you want to delete your account? This action
+            cannot be undone and all your data will be permanently lost.
+          </p>
+
+          <div class="mb-6">
+            <label
+              class="block text-sm font-medium text-dark-1 dark:text-dark-1-dark mb-2"
+            >
+              Type "DELETE" to confirm:
+            </label>
+            <input
+              type="text"
+              id="deleteConfirmInput"
+              class="w-full px-3 py-2 bg-light-3 dark:bg-light-3-dark border border-dark-3 dark:border-dark-3-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-dark-1 dark:text-dark-1-dark"
+              placeholder="Type DELETE"
+            />
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              id="cancelDeleteBtn"
+              class="flex-1 px-4 py-2 bg-light-3 dark:bg-light-3-dark text-dark-1 dark:text-dark-1-dark rounded-lg hover:bg-light-4 dark:hover:bg-light-2-dark transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              id="confirmDeleteBtn"
+              class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              Delete Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script src="/script.js"></script>
+    <script src="/settings.js"></script>
+  </body>
+</html>

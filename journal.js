@@ -1,6 +1,7 @@
 class Journal {
   constructor() {
     this.textarea = document.getElementById("journalTextarea");
+    this.linesContainer = document.getElementById("journalLines");
     this.dock = document.getElementById("journalDock");
     this.dockHoverArea = document.getElementById("dockHoverArea");
     this.wordCountEl = document.getElementById("wordCount");
@@ -23,11 +24,57 @@ class Journal {
         : location.origin;
 
     this.initializeEventListeners();
+    this.initializeLines();
     this.loadCurrentEntry();
     this.updateDate();
     this.updateWordCount();
     this.setupBeforeUnload();
     this.setupOnlineOfflineHandlers();
+  }
+
+  initializeLines() {
+    this.updateLines();
+
+    this.textarea.addEventListener("scroll", () => {
+      this.updateLines();
+    });
+
+    window.addEventListener("resize", () => {
+      this.updateLines();
+    });
+
+    this.textarea.addEventListener("input", () => {
+      setTimeout(() => this.updateLines(), 0);
+    });
+  }
+
+  updateLines() {
+    this.linesContainer.innerHTML = "";
+
+    const textareaRect = this.textarea.getBoundingClientRect();
+    const containerRect = this.linesContainer.getBoundingClientRect();
+
+    const scrollTop = this.textarea.scrollTop;
+    const lineHeight = parseFloat(getComputedStyle(this.textarea).lineHeight);
+    const paddingTop = parseFloat(getComputedStyle(this.textarea).paddingTop);
+
+    const firstLineTop = paddingTop - scrollTop;
+
+    const visibleHeight = containerRect.height;
+    const totalLines =
+      Math.ceil((visibleHeight + scrollTop + paddingTop) / lineHeight) + 5;
+
+    for (let i = 0; i < totalLines; i++) {
+      const line = document.createElement("div");
+      line.className = "journal-line";
+
+      const lineTop = firstLineTop + i * lineHeight;
+      line.style.top = `${lineTop}px`;
+
+      if (lineTop > -lineHeight && lineTop < visibleHeight + lineHeight) {
+        this.linesContainer.appendChild(line);
+      }
+    }
   }
 
   initializeEventListeners() {
