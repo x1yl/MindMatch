@@ -94,6 +94,34 @@ const getFreshUser = async () => {
   return null;
 };
 
+const fetchFreshUserData = async () => {
+  try {
+    const API_BASE_URL =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+        ? "http://localhost:8081"
+        : location.origin;
+        
+    const token = await getToken();
+    const response = await fetch(`${API_BASE_URL}/api/user-profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      return userData;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching fresh user data:", error);
+    return null;
+  }
+};
+
 const getToken = async () => {
   const isAuthenticated = await auth0Client.isAuthenticated();
   if (isAuthenticated) {
@@ -150,6 +178,7 @@ const checkAuthAndRedirect = async (onAuthenticatedCallback, redirectPath = "/",
           }
           initLogoutHandler();
           initSidebarHandler();
+          await updateAllProfileElements();
         } else {
           window.location.href = redirectPath;
         }
@@ -227,6 +256,84 @@ const initSidebarHandler = () => {
       closeSidebarMenu();
     }
   });
+};
+
+const updateAllProfileElements = async () => {
+  try {
+    const freshUserData = await fetchFreshUserData();
+    const auth0User = await auth0Client.getUser();
+    const user = freshUserData || auth0User;
+    
+    if (!user) return;
+
+    const profilePictures = document.querySelectorAll('[id$="ProfilePicture"]');
+    profilePictures.forEach(img => {
+      const container = img.parentElement;
+      const fallbackIcon = img.nextElementSibling;
+      
+      const isCustomAvatarType = user.picture && user.picture.includes("mindmatch.app/avatars/");
+      
+      if (user.picture && !isCustomAvatarType) {
+        img.src = user.picture;
+        img.style.display = 'block';
+        if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
+          fallbackIcon.style.display = 'none';
+        }
+      } else if (isCustomAvatarType) {
+        const avatarType = user.picture.match(/avatars\/(.+)\.png$/)?.[1];
+        
+        img.style.display = 'none';
+        
+        if (fallbackIcon) {
+          const avatarIcons = {
+            user: "fas fa-user",
+            smile: "fas fa-smile",
+            leaf: "fas fa-leaf",
+            heart: "fas fa-heart",
+            star: "fas fa-star",
+            sun: "fas fa-sun",
+          };
+
+          const avatarColors = {
+            user: "bg-primary",
+            smile: "bg-purple-500",
+            leaf: "bg-green-500",
+            heart: "bg-orange-500",
+            star: "bg-teal-500",
+            sun: "bg-indigo-500",
+          };
+
+          const iconClass = avatarIcons[avatarType] || "fas fa-user";
+          const colorClass = avatarColors[avatarType] || "bg-primary";
+          
+          fallbackIcon.className = `${iconClass} text-light-1 text-sm`;
+          fallbackIcon.style.display = 'block';
+          
+          container.className = container.className.replace(/bg-\w+-\d+/, '') + ` ${colorClass}`;
+        }
+      } else {
+        img.style.display = 'none';
+        if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
+          fallbackIcon.style.display = 'block';
+          fallbackIcon.className = 'fas fa-user text-light-1 text-sm';
+          container.className = container.className.replace(/bg-\w+-\d+/, '') + ' bg-primary';
+        }
+      }
+    });
+
+    const userNameElements = document.querySelectorAll('[id$="UserName"]');
+    userNameElements.forEach(element => {
+      element.textContent = user.name || user.nickname || user.email || 'User';
+    });
+
+    const userEmailElements = document.querySelectorAll('[id$="UserEmail"]');
+    userEmailElements.forEach(element => {
+      element.textContent = user.email || '';
+    });
+
+  } catch (error) {
+    console.error('Error updating profile elements:', error);
+  }
 };
 
 document.addEventListener("DOMContentLoaded", initAuth0);
