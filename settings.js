@@ -53,7 +53,7 @@ async function initializeSettings() {
 
 function initializeAvatarSelection() {
   const avatarOptions = document.querySelectorAll(".avatar-option");
-  const uploadBtn = document.getElementById("uploadAvatarBtn");
+  const avatarChangeBtn = document.getElementById("avatarChangeBtn");
   const uploadInput = document.getElementById("avatarUpload");
 
   avatarOptions.forEach((option) => {
@@ -73,7 +73,7 @@ function initializeAvatarSelection() {
     });
   });
 
-  uploadBtn.addEventListener("click", function () {
+  avatarChangeBtn.addEventListener("click", function () {
     uploadInput.click();
   });
 
@@ -82,14 +82,13 @@ function initializeAvatarSelection() {
     if (file) {
       if (file.type.startsWith("image/")) {
         if (file.size > 10 * 1024 * 1024) {
-          // 10MB limit
           showMessage("Image file must be smaller than 10MB.", "error");
           return;
         }
 
         try {
-          uploadBtn.classList.add("loading");
-          uploadBtn.disabled = true;
+          avatarChangeBtn.classList.add("loading");
+          avatarChangeBtn.disabled = true;
 
           const reader = new FileReader();
           reader.onload = async function (e) {
@@ -109,16 +108,16 @@ function initializeAvatarSelection() {
               console.error("Upload failed:", error);
               showMessage("Failed to update profile picture.", "error");
             } finally {
-              uploadBtn.classList.remove("loading");
-              uploadBtn.disabled = false;
+              avatarChangeBtn.classList.remove("loading");
+              avatarChangeBtn.disabled = false;
             }
           };
           reader.readAsDataURL(file);
         } catch (error) {
           console.error("Error reading file:", error);
           showMessage("Failed to read image file.", "error");
-          uploadBtn.classList.remove("loading");
-          uploadBtn.disabled = false;
+          avatarChangeBtn.classList.remove("loading");
+          avatarChangeBtn.disabled = false;
         }
       } else {
         showMessage("Please select a valid image file.", "error");
@@ -130,18 +129,20 @@ function initializeAvatarSelection() {
 function setCurrentAvatar(pictureUrl, avatarType = null) {
   const currentAvatar = document.getElementById("currentAvatar");
   const navbarAvatar = document.getElementById("settingsProfilePicture");
+  const navbarContainer = navbarAvatar ? navbarAvatar.parentElement : null;
 
   if (pictureUrl && pictureUrl !== "" && !avatarType) {
     currentAvatar.className =
       "w-24 h-24 rounded-full overflow-hidden shadow-lg bg-gray-200";
     currentAvatar.innerHTML = `<img src="${pictureUrl}" alt="Profile Picture" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\"fas fa-user text-gray-500 text-2xl\\"></i>'; this.parentElement.classList.add('flex', 'items-center', 'justify-center');">`;
 
-    if (navbarAvatar) {
+    if (navbarAvatar && navbarContainer) {
+      navbarContainer.className = "w-8 h-8 rounded-full overflow-hidden";
       navbarAvatar.src = pictureUrl;
-      navbarAvatar.style.display = 'block';
+      navbarAvatar.style.display = "block";
       const fallbackIcon = navbarAvatar.nextElementSibling;
-      if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
-        fallbackIcon.style.display = 'none';
+      if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+        fallbackIcon.style.display = "none";
       }
     }
 
@@ -173,11 +174,13 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
     currentAvatar.className = `w-24 h-24 ${colorClass} rounded-full flex items-center justify-center shadow-lg`;
     currentAvatar.innerHTML = `<i class="${iconClass} text-white text-2xl"></i>`;
 
-    if (navbarAvatar) {
-      navbarAvatar.style.display = 'none';
+    if (navbarAvatar && navbarContainer) {
+      navbarContainer.className = `w-8 h-8 ${colorClass} rounded-full flex items-center justify-center overflow-hidden`;
+      navbarAvatar.style.display = "none";
       const fallbackIcon = navbarAvatar.nextElementSibling;
-      if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
-        fallbackIcon.style.display = 'block';
+      if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+        fallbackIcon.className = `${iconClass} text-light-1 text-sm`;
+        fallbackIcon.style.display = "block";
       }
     }
 
@@ -192,16 +195,19 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
       "w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-lg";
     currentAvatar.innerHTML = '<i class="fas fa-user text-white text-2xl"></i>';
 
-    if (navbarAvatar) {
-      navbarAvatar.style.display = 'none';
+    if (navbarAvatar && navbarContainer) {
+      navbarContainer.className =
+        "w-8 h-8 bg-primary rounded-full flex items-center justify-center overflow-hidden";
+      navbarAvatar.style.display = "none";
       const fallbackIcon = navbarAvatar.nextElementSibling;
-      if (fallbackIcon && fallbackIcon.classList.contains('fa-user')) {
-        fallbackIcon.style.display = 'block';
+      if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+        fallbackIcon.className = "fas fa-user text-light-1 text-sm";
+        fallbackIcon.style.display = "block";
       }
     }
   }
-  
-  if (typeof updateAllProfileElements === 'function') {
+
+  if (typeof updateAllProfileElements === "function") {
     updateAllProfileElements();
   }
 }
@@ -248,9 +254,10 @@ function initializeUsernameChange() {
 
       document.getElementById("usernameInput").value = updatedName;
       document.getElementById("settingsUserName").textContent = updatedName;
-      document.getElementById("settingsPanelUserName").textContent = updatedName;
-      
-      if (typeof updateAllProfileElements === 'function') {
+      document.getElementById("settingsPanelUserName").textContent =
+        updatedName;
+
+      if (typeof updateAllProfileElements === "function") {
         updateAllProfileElements();
       }
     } catch (error) {
@@ -432,29 +439,25 @@ function initializeDeleteAccount() {
 
       try {
         await deleteUserAccount();
-        
+
         showMessage(
           "Account deleted successfully. You will be redirected to the login page.",
           "success"
         );
 
-        // Wait 2 seconds then redirect to logout/login
         setTimeout(() => {
-          // Clear any local storage or cached data
           localStorage.clear();
           sessionStorage.clear();
-          
-          // Redirect to home page (user will no longer be authenticated)
-          window.location.href = '/';
+
+          window.location.href = "/";
         }, 2000);
-        
       } catch (error) {
-        console.error('Error deleting account:', error);
+        console.error("Error deleting account:", error);
         showMessage(
           "Failed to delete account. Please try again or contact support.",
           "error"
         );
-        
+
         confirmBtn.classList.remove("loading");
         confirmBtn.disabled = false;
       }
