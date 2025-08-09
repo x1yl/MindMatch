@@ -3,13 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>
-      Settings <a href="./settings.html" class="w-full px-4 py-2 text-left
-      text-dark-1 dark:text-dark-1-dark hover:bg-light-3
-      dark:hover:bg-light-3-dark transition-colors flex items-center gap-3" > <i
-      class="fas fa-cog w-4 h-4 text-dark-2 dark:text-dark-2-dark" ></i>
-      Settings </a>ch
-    </title>
+    <title>Settings - MindMatch</title>
     <link rel="stylesheet" href="output.css" />
     <script
       src="https://kit.fontawesome.com/480c99c053.js"
@@ -146,16 +140,19 @@
             <div
               class="flex items-center gap-2 cursor-pointer hover:bg-light-3 dark:hover:bg-light-3-dark rounded-lg px-3 py-2 transition-colors"
             >
-              <div
-                class="w-8 h-8 bg-primary rounded-full flex items-center justify-center"
-                id="navbarAvatar"
-              >
+              <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center overflow-hidden">
+                <img 
+                  id="settingsProfilePicture" 
+                  class="w-full h-full object-cover" 
+                  style="display: none;"
+                  alt="Profile"
+                />
                 <i class="fas fa-user text-light-1 text-sm"></i>
               </div>
               <span
                 id="settingsUserName"
                 class="text-dark-1 dark:text-dark-1-dark font-medium hidden md:block"
-                >ADMIN</span
+                >Loading...</span
               >
               <i
                 class="fas fa-chevron-down text-dark-2 dark:text-dark-2-dark text-xs hidden md:block"
@@ -170,15 +167,16 @@
               >
                 <p
                   class="text-sm font-medium text-dark-1 dark:text-dark-1-dark"
-                  id="panelUserName"
+                  id="settingsPanelUserName"
                 >
-                  ADMIN
+                  Loading...
                 </p>
                 <p
                   class="text-xs text-dark-2 dark:text-dark-2-dark"
                   id="settingsUserEmail"
                 >
-                  admin@mindmatch.xyz
+                  
+                </p>
                 </p>
               </div>
               <button
@@ -456,7 +454,7 @@
     </div>
 
     <script src="/auth.js"></script>
-    <script src="/script.js"></script>
+    <script src="/theme.js"></script>
     <script src="/settings.js"></script>
   </body>
 </html>

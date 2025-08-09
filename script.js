@@ -1,45 +1,30 @@
-function updateTheme() {
-  const isDark =
-    localStorage.theme === "dark" ||
-    (!("theme" in localStorage) &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
+const updateUI = async () => {
+  const isAuthenticated = await auth0Client.isAuthenticated();
+  const loginBtn = document.getElementById("loginBtn");
+  const dashboardBtn = document.getElementById("dashboardBtn");
+  const loginLink = document.getElementById("loginLink");
+  const userInfo = document.getElementById("userInfo");
+  const userName = document.getElementById("userName");
 
-  document.documentElement.classList.toggle("dark", isDark);
+  if (isAuthenticated) {
+    const user = await auth0Client.getUser();
 
-  const themeIcon = document.querySelector(".theme-button i");
-  if (themeIcon) {
-    themeIcon.className = isDark
-      ? "fas fa-moon text-dark-1 dark:text-dark-1-dark"
-      : "fas fa-sun text-dark-1 dark:text-dark-1-dark";
+    loginBtn?.classList.add("hidden");
+    loginLink?.classList.add("hidden");
+    dashboardBtn?.classList.remove("hidden");
+    userInfo?.classList.remove("hidden");
+    if (userName) {
+      userName.textContent = user.name || user.email;
+    }
+  } else {
+    loginBtn?.classList.remove("hidden");
+    loginLink?.classList.remove("hidden");
+    dashboardBtn?.classList.add("hidden");
+    userInfo?.classList.add("hidden");
   }
-}
-
-updateTheme();
+};
 
 document.addEventListener("DOMContentLoaded", function () {
-  const lightBtn = document.querySelector(
-    ".theme-dropdown button:nth-child(1)"
-  );
-  const darkBtn = document.querySelector(".theme-dropdown button:nth-child(2)");
-  const systemBtn = document.querySelector(
-    ".theme-dropdown button:nth-child(3)"
-  );
-
-  lightBtn?.addEventListener("click", function () {
-    localStorage.theme = "light";
-    updateTheme();
-  });
-
-  darkBtn?.addEventListener("click", function () {
-    localStorage.theme = "dark";
-    updateTheme();
-  });
-
-  systemBtn?.addEventListener("click", function () {
-    localStorage.removeItem("theme");
-    updateTheme();
-  });
-
   const loginBtn = document.getElementById("loginBtn");
   // const logoutBtn = document.getElementById('logoutBtn');
   const loginLink = document.getElementById("loginLink");
@@ -53,26 +38,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // logoutBtn?.addEventListener("click", logout);
   dashboardBtn?.addEventListener("click", () => {
     window.location.href = "./dashboard.html";
   });
-
-  if (document.getElementById("logoutBtn")) {
-    const logoutBtn = document.getElementById("logoutBtn");
-    logoutBtn?.addEventListener("click", logout);
-  }
 
   loginLink?.addEventListener("click", function (e) {
     signIn();
   });
 });
-
-// Listen for system theme changes
-window
-  .matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", function () {
-    if (!("theme" in localStorage)) {
-      updateTheme();
-    }
-  });
