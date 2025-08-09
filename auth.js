@@ -303,7 +303,7 @@ const updateAllProfileElements = async () => {
           };
 
           const avatarColors = {
-            user: "bg-primary",
+            user: "bg-blue-500",
             smile: "bg-purple-500",
             leaf: "bg-green-500",
             heart: "bg-orange-500",
@@ -312,7 +312,7 @@ const updateAllProfileElements = async () => {
           };
 
           const iconClass = avatarIcons[avatarType] || "fas fa-user";
-          const colorClass = avatarColors[avatarType] || "bg-primary";
+          const colorClass = avatarColors[avatarType] || "bg-blue-500";
 
           fallbackIcon.className = `${iconClass} text-light-1 text-sm`;
           fallbackIcon.style.display = "block";
