@@ -284,7 +284,7 @@ const updateAllProfileElements = async () => {
       if (user.picture && !isCustomAvatarType) {
         img.src = user.picture;
         img.style.display = "block";
-        if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+        if (fallbackIcon) {
           fallbackIcon.style.display = "none";
         }
       } else if (isCustomAvatarType) {
@@ -322,7 +322,7 @@ const updateAllProfileElements = async () => {
         }
       } else {
         img.style.display = "none";
-        if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+        if (fallbackIcon) {
           fallbackIcon.style.display = "block";
           fallbackIcon.className = "fas fa-user text-light-1 text-sm";
           container.className =

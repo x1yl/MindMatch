@@ -65,11 +65,17 @@ function initializeAvatarSelection() {
       avatarOptions.forEach((opt) => opt.classList.remove("active"));
       this.classList.add("active");
 
-      setCurrentAvatar(null, avatarType);
+      setCurrentAvatar(null, avatarType, { suppressGlobalUpdate: true });
 
-      updateUserAvatar(avatarType);
-
-      showMessage("Avatar updated successfully!", "success");
+      (async () => {
+        try {
+          await updateUserAvatar(avatarType);
+          showMessage("Avatar updated successfully!", "success");
+        } catch (e) {
+          console.error("Error updating avatar:", e);
+          showMessage("Failed to update avatar.", "error");
+        }
+      })();
     });
   });
 
@@ -96,9 +102,10 @@ function initializeAvatarSelection() {
               await updateUserPicture(e.target.result, file.name);
 
               const freshUserData = await fetchFreshUserData();
-              if (freshUserData) {
-                currentUser = freshUserData;
-                setCurrentAvatar(freshUserData.picture);
+              const newPicture = freshUserData?.picture || currentUser?.picture;
+              if (newPicture) {
+                currentUser.picture = newPicture;
+                setCurrentAvatar(newPicture, null, { suppressGlobalUpdate: true });
               }
 
               avatarOptions.forEach((opt) => opt.classList.remove("active"));
@@ -126,7 +133,8 @@ function initializeAvatarSelection() {
   });
 }
 
-function setCurrentAvatar(pictureUrl, avatarType = null) {
+function setCurrentAvatar(pictureUrl, avatarType = null, options = {}) {
+  const { suppressGlobalUpdate = false } = options || {};
   const currentAvatar = document.getElementById("currentAvatar");
   const navbarAvatar = document.getElementById("settingsProfilePicture");
   const navbarContainer = navbarAvatar ? navbarAvatar.parentElement : null;
@@ -141,7 +149,7 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
       navbarAvatar.src = pictureUrl;
       navbarAvatar.style.display = "block";
       const fallbackIcon = navbarAvatar.nextElementSibling;
-      if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+      if (fallbackIcon) {
         fallbackIcon.style.display = "none";
       }
     }
@@ -177,8 +185,9 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
     if (navbarAvatar && navbarContainer) {
       navbarContainer.className = `w-8 h-8 ${colorClass} rounded-full flex items-center justify-center overflow-hidden`;
       navbarAvatar.style.display = "none";
+      navbarAvatar.src = "";
       const fallbackIcon = navbarAvatar.nextElementSibling;
-      if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+      if (fallbackIcon) {
         fallbackIcon.className = `${iconClass} text-light-1 text-sm`;
         fallbackIcon.style.display = "block";
       }
@@ -199,15 +208,16 @@ function setCurrentAvatar(pictureUrl, avatarType = null) {
       navbarContainer.className =
         "w-8 h-8 bg-primary rounded-full flex items-center justify-center overflow-hidden";
       navbarAvatar.style.display = "none";
+      navbarAvatar.src = "";
       const fallbackIcon = navbarAvatar.nextElementSibling;
-      if (fallbackIcon && fallbackIcon.classList.contains("fa-user")) {
+      if (fallbackIcon) {
         fallbackIcon.className = "fas fa-user text-light-1 text-sm";
         fallbackIcon.style.display = "block";
       }
     }
   }
 
-  if (typeof updateAllProfileElements === "function") {
+  if (!suppressGlobalUpdate && typeof updateAllProfileElements === "function") {
     updateAllProfileElements();
   }
 }
