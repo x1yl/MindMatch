@@ -23,14 +23,14 @@ async function initializeSettings() {
     const freshUserData = await fetchFreshUserData();
     currentUser = freshUserData || user;
 
-    document.getElementById("usernameInput").value = currentUser.nickname || "";
+    document.getElementById("usernameInput").value = currentUser.username || "";
     document.getElementById("emailDisplay").value = currentUser.email || "";
     document.getElementById("settingsUserName").textContent =
-      currentUser.nickname || "User";
+      currentUser.username || "User";
     document.getElementById("settingsUserEmail").textContent =
       currentUser.email || "";
     document.getElementById("settingsPanelUserName").textContent =
-      currentUser.nickname || "User";
+      currentUser.username || "User";
 
     if (
       currentUser.picture &&
@@ -244,7 +244,7 @@ function initializeUsernameChange() {
       return;
     }
 
-    if (newUsername === currentUser.nickname) {
+    if (newUsername === currentUser.username) {
       showMessage("No changes to save.", "info");
       return;
     }
@@ -260,7 +260,7 @@ function initializeUsernameChange() {
         currentUser = freshUserData;
       }
 
-      const updatedName = freshUserData ? freshUserData.nickname : newUsername;
+      const updatedName = freshUserData ? freshUserData.username : newUsername;
 
       document.getElementById("usernameInput").value = updatedName;
       document.getElementById("settingsUserName").textContent = updatedName;
@@ -273,7 +273,7 @@ function initializeUsernameChange() {
     } catch (error) {
       console.error("Error updating name:", error);
       showMessage("Failed to update name. Please try again.", "error");
-      usernameInput.value = currentUser.nickname || "";
+      usernameInput.value = currentUser.username || "";
     } finally {
       saveBtn.classList.remove("loading");
       saveBtn.disabled = false;

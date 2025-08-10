@@ -132,7 +132,7 @@ app.patch("/api/user-profile/name", checkJwt, async (req, res) => {
 
     const response = await axios.patch(
       `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`,
-      { nickname: username.trim() },
+      { username: username.trim() },
       {
         headers: {
           'Authorization': `Bearer ${token}`,
