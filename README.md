@@ -39,12 +39,19 @@ MindMatch is a simple mental health app that helps you track your mood, write in
 ## :sparkles: Features
 
 :heavy_check_mark: Secure Auth (Auth0, JWT)
+
 :heavy_check_mark: Mood tracking with charts and trends data
-:heavy_check_mark: Journal entries synced to a secure databases;
+
+:heavy_check_mark: Journal entries synced to a secure databases
+
 :heavy_check_mark: AI Therapist (guided, safety-first experience, with a soft filter to prevent other uses)
+
 :heavy_check_mark: Coping tools library
+
 :heavy_check_mark: Settings page (username update, avatar presets, image upload, delete account)
+
 :heavy_check_mark: Dark/Light/System theme with persistence
+
 :heavy_check_mark: Responsive sidebar
 
 ## :rocket: Technologies
