@@ -333,7 +333,7 @@ const updateAllProfileElements = async () => {
 
     const userNameElements = document.querySelectorAll('[id$="UserName"]');
     userNameElements.forEach((element) => {
-      element.textContent = user.nickname || user.name || user.email || "User";
+      element.textContent = user.username || user.name || user.email || "User";
     });
 
     const userEmailElements = document.querySelectorAll('[id$="UserEmail"]');
