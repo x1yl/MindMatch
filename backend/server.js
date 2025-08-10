@@ -122,17 +122,17 @@ app.get("/api/user-profile", checkJwt, async (req, res) => {
 app.patch("/api/user-profile/name", checkJwt, async (req, res) => {
   try {
     const userId = req.auth.sub;
-    const { name } = req.body;
+    const { username } = req.body;
 
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return res.status(400).json({ error: 'Name is required' });
+    if (!username || typeof username !== 'string' || username.trim().length === 0) {
+      return res.status(400).json({ error: 'Username is required' });
     }
 
     const token = await getManagementToken();
 
     const response = await axios.patch(
       `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`,
-      { name: name.trim() },
+      { username: username.trim() },
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -141,10 +141,10 @@ app.patch("/api/user-profile/name", checkJwt, async (req, res) => {
       }
     );
 
-    res.json({ message: 'Name updated successfully', user: response.data });
+    res.json({ message: 'Username updated successfully', user: response.data });
   } catch (error) {
-    console.error('Error updating user name:', error.message);
-    res.status(500).json({ error: 'Failed to update user name' });
+    console.error('Error updating username:', error.message);
+    res.status(500).json({ error: 'Failed to update username' });
   }
 });
 

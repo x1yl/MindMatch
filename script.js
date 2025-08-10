@@ -4,7 +4,6 @@ const updateUI = async () => {
   const dashboardBtn = document.getElementById("dashboardBtn");
   const loginLink = document.getElementById("loginLink");
   const userInfo = document.getElementById("userInfo");
-  const userName = document.getElementById("userName");
 
   if (isAuthenticated) {
     const user = await auth0Client.getUser();
@@ -13,9 +12,11 @@ const updateUI = async () => {
     loginLink?.classList.add("hidden");
     dashboardBtn?.classList.remove("hidden");
     userInfo?.classList.remove("hidden");
-    if (userName) {
-      userName.textContent = user.name || user.email;
+
+    if (typeof updateAllProfileElements === "function") {
+      await updateAllProfileElements();
     }
+
   } else {
     loginBtn?.classList.remove("hidden");
     loginLink?.classList.remove("hidden");
