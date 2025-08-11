@@ -16,7 +16,6 @@ const updateUI = async () => {
     if (typeof updateAllProfileElements === "function") {
       await updateAllProfileElements();
     }
-
   } else {
     loginBtn?.classList.remove("hidden");
     loginLink?.classList.remove("hidden");
@@ -46,4 +45,16 @@ document.addEventListener("DOMContentLoaded", function () {
   loginLink?.addEventListener("click", function (e) {
     signIn();
   });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+  if (scrollToTopBtn) {
+    scrollToTopBtn.addEventListener("click", function () {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+  }
 });
